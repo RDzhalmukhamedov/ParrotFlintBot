@@ -1,0 +1,37 @@
+﻿name: Deploy Parrot Flint Bot Crawler
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - 'master'
+    paths:
+      - '**/ParrotFlintBot.Crawler/**'
+      - '**/fly-crawler.yml'
+
+jobs:
+  deploy-crawler:
+    name: Deploy Parrot Flint Bot Crawler to Fly.io
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
+    steps:
+      - uses: actions/checkout@v3
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - run: > 
+          flyctl deploy ./ParrotFlintBot.Crawler 
+          --ha=false
+          -e RABBIT_HOST=${{ secrets.RABBIT_HOST }} 
+          -e RABBIT_PORT=${{ secrets.RABBIT_PORT }} 
+          -e RABBIT_USERNAME=${{ secrets.RABBIT_USERNAME }} 
+          -e RABBIT_PASSWORD=${{ secrets.RABBIT_PASSWORD }} 
+          -e APIFY_TOKEN=${{ secrets.APIFY_TOKEN }} 
+          -e APIFY_ACTOR_ID=${{ secrets.APIFY_ACTOR_ID }} 
+          -e ROUTE_KEY_TO_LISTEN=${{ vars.PROJECTS_TO_CRAWL_ROUTE }} 
+          -e ROUTE_KEY_TO_PUBLISH=${{ vars.NEW_UPDATES_ROUTE }} 
+          -e RABBIT_MESSAGE_TTL=${{ vars.RABBIT_MESSAGE_TTL }} 
+          -e APIFY_MAX_RETRIES=${{ vars.APIFY_MAX_RETRIES }} 
+          --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}

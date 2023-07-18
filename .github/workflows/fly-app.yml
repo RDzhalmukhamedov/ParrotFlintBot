@@ -1,0 +1,40 @@
+name: Fly Deploy Parrot Flint Bot Application
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - 'master'
+    paths:
+      - '**/ParrotFlintBot.App/**'
+      - '**/ParrotFlintBot.Shared/**'
+      - '**/ParrotFlintBot.RabbitMQ/**'
+      - '**/fly-app.yml'
+
+jobs:
+  deploy-app:
+    name: Deploy Parrot Flint Bot App
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
+    steps:
+      - uses: actions/checkout@v3
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - run: > 
+          flyctl deploy 
+          --ha=false 
+          -c ./ParrotFlintBot.App/fly.toml 
+          --dockerfile ./ParrotFlintBot.App/Dockerfile 
+          -e BotConfiguration:BotToken=${{ secrets.BOT_TOKEN }} 
+          -e RabbitMQConfiguration:Host=${{ secrets.RABBIT_HOST }} 
+          -e RabbitMQConfiguration:Port=${{ secrets.RABBIT_PORT }} 
+          -e RabbitMQConfiguration:Username=${{ secrets.RABBIT_USERNAME }} 
+          -e RabbitMQConfiguration:Password=${{ secrets.RABBIT_PASSWORD }} 
+          -e RabbitMQConfiguration:EnableAckConfirmation=${{ vars.RABBIT_ACK_CONFIRMATION_APP }} 
+          -e RabbitMQConfiguration:MessageTTL=${{ vars.RABBIT_MESSAGE_TTL_APP }} 
+          -e RabbitMQConfiguration:ListenerRouteKeys:UpdatesNotification=${{ vars.UPDATES_INFO_ROUTE }} 
+          -e RabbitMQConfiguration:ListenerRouteKeys:ProjectsList=${{ vars.PROJECTS_LIST_ROUTE }} 
+          -e RabbitMQConfiguration:PublisherRouteKeys:UserActions=${{ vars.USER_ACTIONS_ROUTE }} 
+          --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}

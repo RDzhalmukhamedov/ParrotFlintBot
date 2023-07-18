@@ -1,0 +1,49 @@
+﻿name: Fly Deploy Parrot Flint Bot Backend
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - 'master'
+    paths:
+      - '**/ParrotFlintBot.Backend/**'
+      - '**/ParrotFlintBot.Shared/**'
+      - '**/ParrotFlintBot.RabbitMQ/**'
+      - '**/ParrotFlintBot.Domain/**'
+      - '**/ParrotFlintBot.DB/**'
+      - '**/fly-backend.yml'
+
+jobs:
+  deploy-backend:
+    name: Deploy Parrot Flint Bot Backend
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
+    steps:
+      - uses: actions/checkout@v3
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - run: > 
+          flyctl deploy 
+          --ha=false
+          -c ./ParrotFlintBot.Backend/fly.toml 
+          --dockerfile ./ParrotFlintBot.Backend/Dockerfile 
+          -e DBConfiguration:Host=${{ secrets.DB_HOST }} 
+          -e DBConfiguration:Port=${{ secrets.DB_PORT }} 
+          -e DBConfiguration:DbName=${{ secrets.DB_NAME }} 
+          -e DBConfiguration:Username=${{ secrets.DB_USERNAME }} 
+          -e DBConfiguration:Password=${{ secrets.DB_PASSWORD }} 
+          -e RabbitMQConfiguration:Host=${{ secrets.RABBIT_HOST }} 
+          -e RabbitMQConfiguration:Port=${{ secrets.RABBIT_PORT }} 
+          -e RabbitMQConfiguration:Username=${{ secrets.RABBIT_USERNAME }} 
+          -e RabbitMQConfiguration:Password=${{ secrets.RABBIT_PASSWORD }} 
+          -e RabbitMQConfiguration:EnableAckConfirmation=${{ vars.RABBIT_ACK_CONFIRMATION }} 
+          -e RabbitMQConfiguration:MessageTTL=${{ vars.RABBIT_MESSAGE_TTL }} 
+          -e RabbitMQConfiguration:ListenerRouteKeys:UserActions=${{ vars.USER_ACTIONS_ROUTE }} 
+          -e RabbitMQConfiguration:ListenerRouteKeys:NewCrawledUpdates=${{ vars.NEW_UPDATES_ROUTE }} 
+          -e RabbitMQConfiguration:PublisherRouteKeys:ProjectsToCrawl=${{ vars.PROJECTS_TO_CRAWL_ROUTE }} 
+          -e RabbitMQConfiguration:PublisherRouteKeys:UpdatesNotification=${{ vars.UPDATES_INFO_ROUTE }} 
+          -e RabbitMQConfiguration:PublisherRouteKeys:ProjectsList=${{ vars.PROJECTS_LIST_ROUTE }} 
+          -e CronConfig:Expression=${{ vars.CRON_EXPRESSION }} 
+          --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}

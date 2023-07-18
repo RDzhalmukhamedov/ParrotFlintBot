@@ -1,0 +1,70 @@
+version: '1.2'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: ParrotFlintBot.App/Dockerfile
+    environment:
+#       AppConfig
+      - Application:Name=BotApp
+#       Bot Config
+      - BotConfiguration:BotToken=${{ secrets.BOT_TOKEN }}
+#       Rabbit Config
+      - RabbitMQConfiguration:Host=${{ secrets.RABBIT_HOST }}
+      - RabbitMQConfiguration:Port=${{ secrets.RABBIT_PORT }}
+      - RabbitMQConfiguration:Username=${{ secrets.RABBIT_USERNAME }}
+      - RabbitMQConfiguration:Password=${{ secrets.RABBIT_PASSWORD }}
+      - RabbitMQConfiguration:EnableAckConfirmation=${{ vars.RABBIT_ACK_CONFIRMATION }}
+      - RabbitMQConfiguration:MessageTTL=${{ vars.RABBIT_MESSAGE_TTL }}
+      - RabbitMQConfiguration:ListenerRouteKeys:UpdatesNotification=${{ vars.UPDATES_INFO_ROUTE }}
+      - RabbitMQConfiguration:ListenerRouteKeys:ProjectsList=${{ vars.PROJECTS_LIST_ROUTE }}
+      - RabbitMQConfiguration:PublisherRouteKeys:UserActions=${{ vars.USER_ACTIONS_ROUTE }}
+    depends_on:
+      - backend
+  backend:
+    build:
+      context: .
+      dockerfile: ParrotFlintBot.Backend/Dockerfile
+    environment:
+#       AppConfig
+      - Application:Name=Backend
+#       DB Config
+      - DBConfiguration:Host=${{ secrets.DB_HOST }}
+      - DBConfiguration:Port=${{ secrets.DB_PORT }}
+      - DBConfiguration:DbName=${{ secrets.DB_NAME }}
+      - DBConfiguration:Username=${{ secrets.DB_USERNAME }}
+      - DBConfiguration:Password=${{ secrets.DB_PASSWORD }}
+#       Rabbit Config
+      - RabbitMQConfiguration:Host=${{ secrets.RABBIT_HOST }}
+      - RabbitMQConfiguration:Port=${{ secrets.RABBIT_PORT }}
+      - RabbitMQConfiguration:Username=${{ secrets.RABBIT_USERNAME }}
+      - RabbitMQConfiguration:Password=${{ secrets.RABBIT_PASSWORD }}
+      - RabbitMQConfiguration:EnableAckConfirmation=${{ vars.RABBIT_ACK_CONFIRMATION }}
+      - RabbitMQConfiguration:MessageTTL=${{ vars.RABBIT_MESSAGE_TTL }}
+      - RabbitMQConfiguration:ListenerRouteKeys:UserActions=${{ vars.USER_ACTIONS_ROUTE }}
+      - RabbitMQConfiguration:ListenerRouteKeys:NewCrawledUpdates=${{ vars.NEW_UPDATES_ROUTE }}
+      - RabbitMQConfiguration:PublisherRouteKeys:ProjectsToCrawl=${{ vars.PROJECTS_TO_CRAWL_ROUTE }}
+      - RabbitMQConfiguration:PublisherRouteKeys:UpdatesNotification=${{ vars.UPDATES_INFO_ROUTE }}
+      - RabbitMQConfiguration:PublisherRouteKeys:ProjectsList=${{ vars.PROJECTS_LIST_ROUTE }}
+      #       Cron Config
+      - CronConfig:Expression=${{ vars.CRON_EXPRESSION }}
+  crawler:
+    build:
+      context: ParrotFlintBot.Crawler/
+      dockerfile: Dockerfile
+    environment:
+      #       Rabbit Config
+      - RABBIT_HOST=${{ secrets.RABBIT_HOST }}
+      - RABBIT_PORT=${{ secrets.RABBIT_PORT }}
+      - RABBIT_USERNAME=${{ secrets.RABBIT_USERNAME }}
+      - RABBIT_PASSWORD=${{ secrets.RABBIT_PASSWORD }}
+      - RABBIT_MESSAGE_TTL=${{ vars.RABBIT_MESSAGE_TTL }}
+      - ROUTE_KEY_TO_LISTEN=${{ vars.PROJECTS_TO_CRAWL_ROUTE }}
+      - ROUTE_KEY_TO_PUBLISH=${{ vars.NEW_UPDATES_ROUTE }}
+      #       Apify Config
+      - APIFY_TOKEN=${{ secrets.APIFY_TOKEN }}
+      - APIFY_ACTOR_ID=${{ secrets.APIFY_ACTOR_ID }}
+      - APIFY_MAX_RETRIES=${{ vars.APIFY_MAX_RETRIES }}
+    depends_on:
+      - backend

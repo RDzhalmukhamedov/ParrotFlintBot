@@ -1,0 +1,10 @@
+﻿**/.vscode
+**/.idea
+**/.vs
+**/bin
+**/obj
+
+ParrotFlintBot.Crawler/dist
+ParrotFlintBot.Crawler/node_modules
+ParrotFlintBot.Crawler/storage
+ParrotFlintBot.Crawler/.env

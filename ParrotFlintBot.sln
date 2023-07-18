@@ -1,0 +1,46 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParrotFlintBot.App", "ParrotFlintBot.App\ParrotFlintBot.App.csproj", "{0AC78170-6B8C-4EA7-8237-B4E97CA57DD1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParrotFlintBot.DB", "ParrotFlintBot.DB\ParrotFlintBot.DB.csproj", "{A1937BA4-F6A2-4686-94DD-1A5657F24553}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParrotFlintBot.Domain", "ParrotFlintBot.Domain\ParrotFlintBot.Domain.csproj", "{086840AD-F31D-49CA-93AF-195CB074CD28}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParrotFlintBot.RabbitMQ", "ParrotFlintBot.RabbitMQ\ParrotFlintBot.RabbitMQ.csproj", "{6CDFDF25-3F48-4CD8-84AD-223D3CCA2D86}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParrotFlintBot.Shared", "ParrotFlintBot.Shared\ParrotFlintBot.Shared.csproj", "{27AE99CE-53DF-4954-8CE5-71025F017919}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParrotFlintBot.Backend", "ParrotFlintBot.Backend\ParrotFlintBot.Backend.csproj", "{014714A7-FBE8-4079-B05D-0096CC42F5B1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0AC78170-6B8C-4EA7-8237-B4E97CA57DD1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0AC78170-6B8C-4EA7-8237-B4E97CA57DD1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0AC78170-6B8C-4EA7-8237-B4E97CA57DD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0AC78170-6B8C-4EA7-8237-B4E97CA57DD1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1937BA4-F6A2-4686-94DD-1A5657F24553}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1937BA4-F6A2-4686-94DD-1A5657F24553}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1937BA4-F6A2-4686-94DD-1A5657F24553}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1937BA4-F6A2-4686-94DD-1A5657F24553}.Release|Any CPU.Build.0 = Release|Any CPU
+		{086840AD-F31D-49CA-93AF-195CB074CD28}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{086840AD-F31D-49CA-93AF-195CB074CD28}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{086840AD-F31D-49CA-93AF-195CB074CD28}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{086840AD-F31D-49CA-93AF-195CB074CD28}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6CDFDF25-3F48-4CD8-84AD-223D3CCA2D86}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6CDFDF25-3F48-4CD8-84AD-223D3CCA2D86}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6CDFDF25-3F48-4CD8-84AD-223D3CCA2D86}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6CDFDF25-3F48-4CD8-84AD-223D3CCA2D86}.Release|Any CPU.Build.0 = Release|Any CPU
+		{27AE99CE-53DF-4954-8CE5-71025F017919}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{27AE99CE-53DF-4954-8CE5-71025F017919}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{27AE99CE-53DF-4954-8CE5-71025F017919}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{27AE99CE-53DF-4954-8CE5-71025F017919}.Release|Any CPU.Build.0 = Release|Any CPU
+		{014714A7-FBE8-4079-B05D-0096CC42F5B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{014714A7-FBE8-4079-B05D-0096CC42F5B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{014714A7-FBE8-4079-B05D-0096CC42F5B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{014714A7-FBE8-4079-B05D-0096CC42F5B1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
