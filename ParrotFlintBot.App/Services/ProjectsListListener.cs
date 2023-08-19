@@ -33,8 +33,8 @@ public class ProjectsListListener : RabbitMQListener
 
             using (var scope = _serviceProvider.CreateScope())
             {
-                var senderService = scope.ServiceProvider.GetRequiredService<ICommunicationService>();
-                await senderService.SendProjectsLists(updatesInfo, stoppingToken);
+                var communicationService = scope.ServiceProvider.GetRequiredService<ICommunicationService>();
+                await communicationService.SendProjectsLists(updatesInfo, stoppingToken);
             }
 
             return true;

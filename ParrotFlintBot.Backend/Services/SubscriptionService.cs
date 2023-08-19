@@ -1,6 +1,9 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Text.Json;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using ParrotFlintBot.Backend.Abstract;
 using ParrotFlintBot.DB.Abstract;
+using ParrotFlintBot.RabbitMQ;
 using ParrotFlintBot.Shared;
 
 namespace ParrotFlintBot.Backend.Services;
@@ -9,11 +12,20 @@ public class SubscriptionService : ISubscriptionService
 {
     private readonly IKSCrawlerUnitOfWork _db;
     private readonly ILogger<SubscriptionService> _logger;
+    private readonly RabbitMQPublisher _publisher;
+    private readonly RabbitMQConfiguration _rabbitConfig;
+    private readonly string _routeKey;
 
-    public SubscriptionService(IKSCrawlerUnitOfWork dbConnection, ILogger<SubscriptionService> logger)
+    public SubscriptionService(IKSCrawlerUnitOfWork dbConnection, ILogger<SubscriptionService> logger,
+        RabbitMQPublisher publisher, IOptions<RabbitMQConfiguration> rabbitConfig)
     {
         _db = dbConnection;
         _logger = logger;
+        
+        _publisher = publisher;
+        _rabbitConfig = rabbitConfig.Value;
+        rabbitConfig.Value.PublisherRouteKeys.TryGetValue(RouteKeyNames.ProjectsToCrawl, out var route);
+        _routeKey = string.IsNullOrWhiteSpace(route) ? RouteKeyNames.ProjectsToCrawl : route;
     }
 
     public async Task<bool> ProcessSubscribe(UserActionInfo info, CancellationToken stoppingToken)
@@ -26,11 +38,17 @@ public class SubscriptionService : ISubscriptionService
             if (info.ProjectLink is not null)
             {
                 var project = await _db.Projects.CreateIfNotExist(info.ProjectLink.GetProjectSlug(),
-                    info.ProjectLink.GetCreatorSlug(), stoppingToken);
+                    info.ProjectLink.GetCreatorSlug(), info.ProjectLink.GetSiteName(), stoppingToken);
                 user.Projects.Add(project);
             }
 
             await _db.Commit(stoppingToken);
+            if (user.Projects.Any(p => p.Status == ProjectStatus.NotTracked))
+            {
+                _publisher.PushMessage(_routeKey,
+                    JsonSerializer.Serialize(user.Projects.Where(p => p.Status == ProjectStatus.NotTracked)),
+                    _rabbitConfig.MessageTTL);
+            }
             result = true;
         }
         catch (Exception ex)
