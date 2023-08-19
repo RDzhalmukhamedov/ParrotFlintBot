@@ -4,10 +4,24 @@ public static class Extensions
 {
     public static string GetUrlToCrawl(this Project project)
     {
-        return $"https://www.kickstarter.com/projects/{project.CreatorSlug}/{project.ProjectSlug}/posts";
+        if (project.Site.Equals("kickstarter"))
+        {
+            return $"https://www.kickstarter.com/projects/{project.CreatorSlug}/{project.ProjectSlug}/posts";
+        }
+        else
+        {
+            return $"https://www.gamefound.com/projects/{project.CreatorSlug}/{project.ProjectSlug}/updates";
+        }
     }
     public static string GetUrlForUpdate(this Project project)
     {
-        return $"https://www.kickstarter.com/projects/{project.CreatorSlug}/{project.ProjectSlug}/posts/{project.LastUpdateId}";
+        if (project.Site.Equals("kickstarter"))
+        {
+            return $"https://www.kickstarter.com/projects/{project.CreatorSlug}/{project.ProjectSlug}/posts/{project.LastUpdateId}";
+        }
+        else
+        {
+            return $"https://www.gamefound.com/projects/{project.CreatorSlug}/{project.ProjectSlug}/updates/{project.LastUpdateId}";
+        }
     }
 }

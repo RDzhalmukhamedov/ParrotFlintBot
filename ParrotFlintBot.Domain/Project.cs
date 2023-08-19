@@ -38,6 +38,8 @@ public class Project
     public long? LastUpdateId { get; set; }
 
     public string? LastUpdateTitle { get; set; }
+    
+    public string Site { get; set; }
 
     public ICollection<User> Users { get; } = new List<User>();
 }

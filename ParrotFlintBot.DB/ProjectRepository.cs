@@ -52,7 +52,7 @@ public class ProjectRepository : IProjectRepository
         await _context.Projects.AddAsync(project, stoppingToken);
     }
 
-    public async Task<Project> CreateIfNotExist(string projectSlug, string creatorSlug, CancellationToken stoppingToken)
+    public async Task<Project> CreateIfNotExist(string projectSlug, string creatorSlug, string site, CancellationToken stoppingToken)
     {
         var project = await GetByProjectSlug(projectSlug, stoppingToken);
         if (project is null)
@@ -61,7 +61,9 @@ public class ProjectRepository : IProjectRepository
             {
                 Name = $"{creatorSlug}/{projectSlug}",
                 ProjectSlug = projectSlug,
-                CreatorSlug = creatorSlug
+                CreatorSlug = creatorSlug,
+                Site = site
+                
             };
             await Add(project, stoppingToken);
         }

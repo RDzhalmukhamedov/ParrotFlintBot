@@ -9,7 +9,7 @@ public interface IProjectRepository : IRepository<Project>
 
     Task<Project?> GetByProjectSlug(string projectSlug, CancellationToken stoppingToken);
 
-    Task<Project> CreateIfNotExist(string projectSlug, string creatorSlug, CancellationToken stoppingToken);
+    Task<Project> CreateIfNotExist(string projectSlug, string creatorSlug, string site, CancellationToken stoppingToken);
 
     Task Update(ProjectInfo info);
 

@@ -7,7 +7,7 @@ export interface AppSettings {
   RABBIT_PASSWORD: string;
   RABBIT_MESSAGE_TTL: number;
   APIFY_TOKEN: string;
-  APIFY_ACTOR_ID: string;
+  APIFY_KS_ACTOR_ID: string;
+  APIFY_GF_ACTOR_ID: string;
   APIFY_MAX_RETRIES: number;
-  APIFY_TEST: string;
 }

@@ -26,16 +26,31 @@ export class CrawlerService {
       return [];
     }
 
-    const actorId = this.configService.get('APIFY_ACTOR_ID', { infer: true });
+    const crawledUpdates = await Promise.all([
+      this.runActor('APIFY_KS_ACTOR_ID', projectsToCrawl, 'kickstarter'),
+      this.runActor('APIFY_GF_ACTOR_ID', projectsToCrawl, 'gamefound'),
+    ]);
+    return crawledUpdates.flat();
+  }
+
+  private async runActor(
+    actorIdKey: keyof AppSettings,
+    projectsToCrawl: ProjectInfo[],
+    label: string,
+  ): Promise<ProjectInfo[]> {
+    const actorId = this.configService.get(actorIdKey, { infer: true }) as string;
     if (!actorId) {
-      this.logger.warn('Apify actor id not defined, crawling will be stopped');
+      this.logger.warn('Apify actor id not defined, crawling will be skipped', { label: label });
       return [];
     }
 
-    const actorInput = await this.initActorInput(projectsToCrawl);
-    this.logger.log(`Started crawling new updates for ${projectsToCrawl.length} projects`);
+    const filteredProjects = projectsToCrawl.filter((project) => project.Link.includes(label));
+    if (!filteredProjects || filteredProjects.length == 0) return [];
+    const input = await this.initActorInput(filteredProjects, label);
+
+    this.logger.log(`Started crawling new updates for ${input.projectsToCrawl.length} projects`, { label: label });
     try {
-      const { defaultDatasetId } = await this.crawler.actor(actorId).call(JSON.stringify(actorInput), {
+      const { defaultDatasetId } = await this.crawler.actor(actorId).call(JSON.stringify(input), {
         contentType: 'application/json',
         build: 'latest',
       });
@@ -47,7 +62,7 @@ export class CrawlerService {
     return [];
   }
 
-  private async initActorInput(projectsToCrawl: ProjectInfo[]): Promise<ActorInput> {
+  private async initActorInput(projectsToCrawl: ProjectInfo[], label: string): Promise<ActorInput> {
     const maxRetriesCount = this.configService.get('APIFY_MAX_RETRIES', 10, { infer: true });
     const result: ActorInput = {
       projectsToCrawl: [],
@@ -59,7 +74,7 @@ export class CrawlerService {
         return {
           url: project.Link,
           userData: {
-            label: 'ks',
+            label: label,
             project: project,
           },
         };

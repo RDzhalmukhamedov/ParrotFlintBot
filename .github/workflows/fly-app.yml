@@ -6,6 +6,7 @@ on:
       - closed
     branches:
       - 'master'
+      - 'main'
     paths:
       - '**/ParrotFlintBot.App/**'
       - '**/ParrotFlintBot.Shared/**'

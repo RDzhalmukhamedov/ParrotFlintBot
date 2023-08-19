@@ -93,6 +93,16 @@ public class ProjectsManagerService : IProjectsManagerService
                 _publisher.PushMessage(_projectsListRouteKey, result, _rabbitConfig.MessageTTL);
                 return true;
             }
+            else
+            {
+                var result = new UpdatesNotification()
+                {
+                    ChatId = chatId,
+                    Updates = new List<ProjectInfo>()
+                };
+                _publisher.PushMessage(_projectsListRouteKey, result, _rabbitConfig.MessageTTL);
+                return true;
+            }
         }
         catch (Exception ex)
         {
