@@ -28,7 +28,8 @@ jobs:
           -e RABBIT_USERNAME=${{ secrets.RABBIT_USERNAME }} 
           -e RABBIT_PASSWORD=${{ secrets.RABBIT_PASSWORD }} 
           -e APIFY_TOKEN=${{ secrets.APIFY_TOKEN }} 
-          -e APIFY_ACTOR_ID=${{ secrets.APIFY_ACTOR_ID }} 
+          -e APIFY_KS_ACTOR_ID=${{ secrets.APIFY_KS_ACTOR_ID }} 
+          -e APIFY_GF_ACTOR_ID=${{ secrets.APIFY_GF_ACTOR_ID }} 
           -e ROUTE_KEY_TO_LISTEN=${{ vars.PROJECTS_TO_CRAWL_ROUTE }} 
           -e ROUTE_KEY_TO_PUBLISH=${{ vars.NEW_UPDATES_ROUTE }} 
           -e RABBIT_MESSAGE_TTL=${{ vars.RABBIT_MESSAGE_TTL }} 
