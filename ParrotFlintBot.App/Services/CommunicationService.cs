@@ -105,7 +105,9 @@ public class CommunicationService : ICommunicationService
     public async Task<Message> SendUsage(Message message, CancellationToken stoppingToken)
     {
         _logger.LogInformation("Called usage message.");
-        const string usage = "Команды:" +
+        const string usage = "Для слежения доступны проекты на Kickstarter и Gamefound." +
+                             " Для подписки можно отправлять короткие ссылки." +
+                             "\nКоманды:" +
                              "\n/s {Сссылка} – подписаться на проект по ссылке" +
                              "\n/u {Ссылка} – отписаться от проека по ссылке" +
                              "\n/list – список проектов, на которые вы подписаны";
