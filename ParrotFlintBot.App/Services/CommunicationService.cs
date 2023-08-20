@@ -180,8 +180,13 @@ public class CommunicationService : ICommunicationService
                 var response = await client.GetAsync(url, stoppingToken);
                 var realLink = response.RequestMessage?.RequestUri;
 
-                var isValidLink = realLink is not null && realLink.Host.Split('.')[1].Equals("kickstarter");
-                if (isValidLink) return realLink;
+                if (realLink is not null)
+                {
+                    var parts = realLink.Host.Split('.');
+                    var site = parts[^2];
+                    var isValidLink = site.Equals("kickstarter") || site.Equals("gamefound");
+                    if (isValidLink) return realLink;
+                }
             }
         }
         catch (Exception ex)

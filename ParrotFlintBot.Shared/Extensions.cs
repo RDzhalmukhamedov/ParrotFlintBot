@@ -66,13 +66,13 @@ public static class Extensions
     public static string GetSiteName(this Uri ksUrl)
     {
         var urlParts = ksUrl.Host.Split('.');
-        // Host will be like "www.{site-name}.com"
-        if (urlParts.Length < 3)
+        // Host will be like "www.{site-name}.com or {site-name}.com"
+        if (urlParts.Length < 2)
         {
             throw new InvalidDataException(ksUrl.OriginalString);
         }
 
-        return urlParts[1];
+        return urlParts[^2];
     }
 
     public static bool IsNullOrEmpty<T>(this IEnumerable<T>? list) where T : class
