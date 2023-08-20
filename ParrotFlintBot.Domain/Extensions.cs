@@ -10,7 +10,7 @@ public static class Extensions
         }
         else
         {
-            return $"https://www.gamefound.com/projects/{project.CreatorSlug}/{project.ProjectSlug}/updates";
+            return $"https://gamefound.com/projects/{project.CreatorSlug}/{project.ProjectSlug}/updates";
         }
     }
     public static string GetUrlForUpdate(this Project project)
@@ -21,7 +21,7 @@ public static class Extensions
         }
         else
         {
-            return $"https://www.gamefound.com/projects/{project.CreatorSlug}/{project.ProjectSlug}/updates/{project.LastUpdateId}";
+            return $"https://gamefound.com/projects/{project.CreatorSlug}/{project.ProjectSlug}/updates/{project.LastUpdateId}";
         }
     }
 }

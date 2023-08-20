@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ParrotFlintBot.Backend.Abstract;
 using ParrotFlintBot.DB.Abstract;
+using ParrotFlintBot.Domain;
 using ParrotFlintBot.RabbitMQ;
 using ParrotFlintBot.Shared;
 
@@ -32,21 +33,33 @@ public class SubscriptionService : ISubscriptionService
     {
         _logger.LogInformation("Called subscription to project updates.");
         var result = false;
+        Project? project = null;
         try
         {
             var user = await _db.Users.CreateIfNotExist(info.ChatId, stoppingToken);
             if (info.ProjectLink is not null)
             {
-                var project = await _db.Projects.CreateIfNotExist(info.ProjectLink.GetProjectSlug(),
+                project = await _db.Projects.CreateIfNotExist(info.ProjectLink.GetProjectSlug(),
                     info.ProjectLink.GetCreatorSlug(), info.ProjectLink.GetSiteName(), stoppingToken);
                 user.Projects.Add(project);
             }
 
             await _db.Commit(stoppingToken);
-            if (user.Projects.Any(p => p.Status == ProjectStatus.NotTracked))
+            if (project is not null && project.Status == ProjectStatus.NotTracked)
             {
+                var projectInfo = new ProjectInfo()
+                {
+                    ProjectId = project.Id,
+                    Status = project.Status,
+                    Link = project.GetUrlToCrawl(),
+                    ProjectName = project.Name,
+                    PrevStatus = project.Status,
+                    UpdatesCount = project.UpdatesCount,
+                    PrevUpdatesCount = project.PrevUpdatesCount
+                };
+                var message = JsonSerializer.Serialize(new[] { projectInfo });
                 _publisher.PushMessage(_routeKey,
-                    JsonSerializer.Serialize(user.Projects.Where(p => p.Status == ProjectStatus.NotTracked)),
+                    message,
                     _rabbitConfig.MessageTTL);
             }
             result = true;
