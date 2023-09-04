@@ -42,25 +42,27 @@ public static class Extensions
     public static string GetProjectSlug(this Uri ksUrl)
     {
         var urlParts = ksUrl.AbsolutePath.Split('/');
+        var index = Array.IndexOf(urlParts, "projects");
         // Path will be like "/projects/{creator-slug}/{project-slug}/..."
-        if (urlParts.Length < 4)
+        if (index == -1 || urlParts.Length < index + 3)
         {
             throw new InvalidDataException(ksUrl.OriginalString);
         }
 
-        return urlParts[3];
+        return urlParts[index + 2];
     }
 
     public static string GetCreatorSlug(this Uri ksUrl)
     {
         var urlParts = ksUrl.AbsolutePath.Split('/');
+        var index = Array.IndexOf(urlParts, "projects");
         // Path will be like "/projects/{creator-slug}/{project-slug}/..."
-        if (urlParts.Length < 4)
+        if (index == -1 || urlParts.Length < index + 3)
         {
             throw new InvalidDataException(ksUrl.OriginalString);
         }
 
-        return urlParts[2];
+        return urlParts[index + 1];
     }
 
     public static string GetSiteName(this Uri ksUrl)
