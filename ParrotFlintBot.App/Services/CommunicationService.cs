@@ -122,8 +122,8 @@ public class CommunicationService : ICommunicationService
         const string usage = "Для слежения доступны проекты на Kickstarter и Gamefound." +
                              " Для подписки можно отправлять короткие ссылки." +
                              "\nКоманды:" +
-                             "\n/s {Сссылка} – подписаться на проект по ссылке" +
-                             "\n/u {Ссылка} – отписаться от проека по ссылке" +
+                             "\n/s {Ссылка} – подписаться на проект по ссылке" +
+                             "\n/u {Ссылка} – отписаться от проекта по ссылке" +
                              "\n/list – список проектов, на которые вы подписаны";
 
         return await _botClient.SendTextMessageAsync(
