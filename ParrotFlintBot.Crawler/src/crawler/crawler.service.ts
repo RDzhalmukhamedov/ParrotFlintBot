@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ApifyClient } from 'apify-client';
+import { ActorRun, ApifyClient } from 'apify-client';
 import { AppSettings } from 'src/shared/app-settings.interface';
 import { ProjectInfo } from 'src/shared/project-info.interface';
 import { ActorInput } from './actor-input.interface';
@@ -50,11 +50,25 @@ export class CrawlerService {
 
     this.logger.log(`Started crawling new updates for ${input.projectsToCrawl.length} projects`, { label: label });
     try {
-      const { defaultDatasetId } = await this.crawler.actor(actorId).call(JSON.stringify(input), {
-        contentType: 'application/json',
-        build: 'latest',
-      });
-      const { items } = await this.crawler.dataset<ProjectInfo>(defaultDatasetId).listItems();
+      const maxRuns = this.configService.get('APIFY_MAX_RUNS', 3, { infer: true });
+      let runsCount = 0;
+      let run: ActorRun | undefined = undefined;
+      let requestHandled: number | undefined = 0;
+      while (!requestHandled && runsCount < maxRuns) {
+        runsCount++;
+        run = await this.crawler.actor(actorId).call(JSON.stringify(input), {
+          contentType: 'application/json',
+          build: 'latest',
+        });
+        requestHandled = run?.usage?.REQUEST_QUEUE_READS;
+      }
+      if (!run || requestHandled == 0) {
+        this.logger.log(
+          `Some issue during actor execution. Run failed or none of requests was handled (${requestHandled})`,
+        );
+        return [];
+      }
+      const { items } = await this.crawler.dataset<ProjectInfo>(run.defaultDatasetId).listItems();
       return items;
     } catch (ex) {
       this.logger.error('Some error during crawler run', ex);

@@ -10,4 +10,5 @@ export interface AppSettings {
   APIFY_KS_ACTOR_ID: string;
   APIFY_GF_ACTOR_ID: string;
   APIFY_MAX_RETRIES: number;
+  APIFY_MAX_RUNS: number;
 }

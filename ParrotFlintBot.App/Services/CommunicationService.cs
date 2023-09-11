@@ -58,6 +58,13 @@ public class CommunicationService : ICommunicationService
                 message = ack ? successMessage : "Что-то пошло не так, попробуйте позже";
             }
         }
+        else
+        {
+            if (string.IsNullOrWhiteSpace(url))
+                message = actionType is UserActionType.Subscribe
+                    ? $"Кажется вы не написали ссылку. Чтобы подписаться на проект, отправьте сообщение в виде /s Ссылка_на_проект"
+                    : $"Кажется вы не написали ссылку. Чтобы отписаться от получения обновлений о проекте, отправьте сообщение в виде /u Ссылка_на_проект";
+        }
 
         return await _botClient.SendTextMessageAsync(
             chatId: chatId,
@@ -76,8 +83,15 @@ public class CommunicationService : ICommunicationService
     public async Task SendProjectUpdates(List<UpdatesNotification> updates, CancellationToken stoppingToken)
     {
         _logger.LogInformation("Sending list of new crawled updates.");
-        var notifications = updates.Select(update => SendUpdateMessages(update, stoppingToken));
-        await Task.WhenAll(notifications);
+        IEnumerable<Task> notifications = new List<Task>();
+        // The Telegram API will not allow bulk notifications to more than ~30 users per second,
+        // if you go over that, you'll start getting 429 errors.
+        foreach (var updatesNotifications in updates.Chunk(30))
+        {
+            notifications = updatesNotifications
+                .Select(update => SendUpdateMessages(update, stoppingToken));
+        } ;
+        await Task.WhenAll(notifications.Append(Task.Delay(1000, stoppingToken)));
     }
 
     public async Task SendProjectsLists(UpdatesNotification info, CancellationToken stoppingToken)
