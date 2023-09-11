@@ -67,5 +67,6 @@ services:
       - APIFY_KS_ACTOR_ID=${{ secrets.APIFY_KS_ACTOR_ID }}
       - APIFY_GF_ACTOR_ID=${{ secrets.APIFY_GF_ACTOR_ID }}
       - APIFY_MAX_RETRIES=${{ vars.APIFY_MAX_RETRIES }}
+      - APIFY_MAX_RUNS=${{ vars.APIFY_MAX_RUNS }}
     depends_on:
       - backend
