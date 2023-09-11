@@ -34,6 +34,7 @@ jobs:
           -e ROUTE_KEY_TO_PUBLISH=${{ vars.NEW_UPDATES_ROUTE }} 
           -e RABBIT_MESSAGE_TTL=${{ vars.RABBIT_MESSAGE_TTL }} 
           -e APIFY_MAX_RETRIES=${{ vars.APIFY_MAX_RETRIES }} 
+          -e APIFY_MAX_RUNS=${{ vars.APIFY_MAX_RUNS }} 
           --remote-only
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
