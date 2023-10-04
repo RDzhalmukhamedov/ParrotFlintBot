@@ -165,7 +165,7 @@ public class CommunicationService : ICommunicationService
         foreach (var project in projects)
         {
             sb.Append(project.Link.Contains("kickstarter.com") ? "\U0001F1F0" : "\U0001F1EC");
-            sb.Append("\U0001F3F4");
+            sb.Append("🏴‍☠️");
             if (project.Status is ProjectStatus.NotTracked)
             {
                 sb.Append("*НЕ ОТСЛЕЖЕНО* ");
