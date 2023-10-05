@@ -36,6 +36,7 @@ jobs:
           -e RabbitMQConfiguration:ListenerRouteKeys:UpdatesNotification=${{ vars.UPDATES_INFO_ROUTE }} 
           -e RabbitMQConfiguration:ListenerRouteKeys:ProjectsList=${{ vars.PROJECTS_LIST_ROUTE }} 
           -e RabbitMQConfiguration:PublisherRouteKeys:UserActions=${{ vars.USER_ACTIONS_ROUTE }} 
+          -e NLog:targets:logtail:sourceToken=${{ secrets.BETTERSTACK_APP_TOKEN }}
           --remote-only
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}

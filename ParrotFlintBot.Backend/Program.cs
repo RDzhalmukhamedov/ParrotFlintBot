@@ -1,5 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using NLog;
+using NLog.Web;
 using ParrotFlintBot.Backend;
 using ParrotFlintBot.Backend.Abstract;
 using ParrotFlintBot.Backend.Services;
@@ -7,8 +10,16 @@ using ParrotFlintBot.DB;
 using ParrotFlintBot.DB.Abstract;
 using ParrotFlintBot.RabbitMQ;
 using ParrotFlintBot.Shared;
+using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 IHost host = Host.CreateDefaultBuilder(args)
+    .ConfigureLogging(logging =>
+    {
+        logging.ClearProviders();
+        logging.SetMinimumLevel(LogLevel.Trace);
+        LogManager.Setup().LoadConfigurationFromAppSettings();
+    })
+    .UseNLog()
     .ConfigureServices((context, services) =>
     {
         services.Configure<AppConfig>(context.Configuration.GetSection(AppConfig.Configuration));

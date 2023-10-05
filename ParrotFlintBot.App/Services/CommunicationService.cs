@@ -38,7 +38,7 @@ public class CommunicationService : ICommunicationService
         UserActionType actionType,
         CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Called subscribing to {url}", url);
+        _logger.LogInformation("Called subscribing({type}) to {url} from {chatId}", actionType, url, chatId);
 
         string message = "Некорректная ссылка, попробуйте другую";
         bool result = TryCreateUrl(url, out var link);
@@ -75,7 +75,7 @@ public class CommunicationService : ICommunicationService
 
     public async Task<Message> RequestProjectsList(Message message, CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Called getting list of projects");
+        _logger.LogInformation("Called getting list of projects from {chatId}", message.Chat.Id);
         _publisher.PushMessage(_routeKey, new UserActionInfo(message.Chat.Id, projectLink: null, UserActionType.List), _config.MessageTTL);
         return await Task.FromResult(message);
     }
@@ -90,13 +90,14 @@ public class CommunicationService : ICommunicationService
         {
             notifications = updatesNotifications
                 .Select(update => SendUpdateMessages(update, stoppingToken));
+            await Task.Delay(2000, stoppingToken);
         } ;
-        await Task.WhenAll(notifications.Append(Task.Delay(1000, stoppingToken)));
+        await Task.WhenAll(notifications);
     }
 
     public async Task SendProjectsLists(UpdatesNotification info, CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Sending list of subscribed projects.");
+        _logger.LogInformation("Sending list of subscribed projects for {chatId}", info.ChatId);
 
         if (info.Updates.IsNullOrEmpty())
         {
@@ -118,7 +119,7 @@ public class CommunicationService : ICommunicationService
 
     public async Task<Message> SendUsage(Message message, CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Called usage message.");
+        _logger.LogInformation("Called usage message from {chatId}", message.Chat.Id);
         const string usage = "Для слежения доступны проекты на Kickstarter и Gamefound." +
                              " Для подписки можно отправлять короткие ссылки." +
                              "\nКоманды:" +
@@ -142,10 +143,18 @@ public class CommunicationService : ICommunicationService
                 sb.Append("*НОВОЕ* ");
             }
 
+            if (u.UpdatesCount > 0)
+            {
             sb.Append(
                 $"Для *{u.ProjectName.EscapeMdChars()}* вышло *{u.UpdatesCount - u.PrevUpdatesCount}* новых апдейтов\\.");
             sb.Append(
-                $"\nПоследний: [{(string.IsNullOrWhiteSpace(u.LastUpdateTitle) ? u.Link : u.LastUpdateTitle.EscapeMdChars())}]({u.Link})");
+                    $"\nПоследний: [{(string.IsNullOrWhiteSpace(u.LastUpdateTitle) ? u.Link : u.LastUpdateTitle).EscapeMdChars()}]({u.Link})");
+            }
+            else
+            {
+                sb.Append(
+                    $"Для *[{u.ProjectName.EscapeMdChars()}]({u.Link})* вышло *{u.UpdatesCount - u.PrevUpdatesCount}* новых апдейтов\\.");
+            }
             var message = sb.ToString();
             sb.Clear();
             return _botClient.SendTextMessageAsync(
@@ -165,7 +174,7 @@ public class CommunicationService : ICommunicationService
         foreach (var project in projects)
         {
             sb.Append(project.Link.Contains("kickstarter.com") ? "\U0001F1F0" : "\U0001F1EC");
-            sb.Append("\U0001F3F4");
+            sb.Append("🏴‍☠️");
             if (project.Status is ProjectStatus.NotTracked)
             {
                 sb.Append("*НЕ ОТСЛЕЖЕНО* ");
