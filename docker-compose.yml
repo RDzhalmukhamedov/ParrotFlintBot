@@ -20,6 +20,8 @@ services:
       - RabbitMQConfiguration:ListenerRouteKeys:UpdatesNotification=${{ vars.UPDATES_INFO_ROUTE }}
       - RabbitMQConfiguration:ListenerRouteKeys:ProjectsList=${{ vars.PROJECTS_LIST_ROUTE }}
       - RabbitMQConfiguration:PublisherRouteKeys:UserActions=${{ vars.USER_ACTIONS_ROUTE }}
+#       NLog Config
+      - NLog:targets:logtail:sourceToken=${{ secrets.BETTERSTACK_APP_TOKEN }}
     depends_on:
       - backend
   backend:
@@ -49,6 +51,8 @@ services:
       - RabbitMQConfiguration:PublisherRouteKeys:ProjectsList=${{ vars.PROJECTS_LIST_ROUTE }}
       #       Cron Config
       - CronConfig:Expression=${{ vars.CRON_EXPRESSION }}
+      #       NLog Config
+      - NLog:targets:logtail:sourceToken=${{ secrets.BETTERSTACK_BACKEND_TOKEN }}
   crawler:
     build:
       context: ParrotFlintBot.Crawler/

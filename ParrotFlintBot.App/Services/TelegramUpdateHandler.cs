@@ -49,7 +49,7 @@ public class TelegramUpdateHandler : IUpdateHandler
 
     private async Task BotOnMessageReceived(Message message, CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Receive message type: {MessageType}", message.Type);
+        _logger.LogInformation("Receive message type: {MessageType} from {ChatId}", message.Type, message.Chat.Id);
         if (message.Text is not { } messageText)
             return;
 

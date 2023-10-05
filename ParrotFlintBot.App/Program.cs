@@ -1,13 +1,24 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using NLog;
+using NLog.Web;
 using ParrotFlintBot.App;
 using ParrotFlintBot.App.Abstract;
 using ParrotFlintBot.App.Services;
 using ParrotFlintBot.RabbitMQ;
 using ParrotFlintBot.Shared;
 using Telegram.Bot;
+using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 IHost host = Host.CreateDefaultBuilder(args)
+    .ConfigureLogging(logging =>
+    {
+        logging.ClearProviders();
+        logging.SetMinimumLevel(LogLevel.Trace);
+        LogManager.Setup().LoadConfigurationFromAppSettings();
+    })
+    .UseNLog()
     .ConfigureServices((context, services) =>
     {
         services.Configure<AppConfig>(context.Configuration.GetSection(AppConfig.Configuration));
