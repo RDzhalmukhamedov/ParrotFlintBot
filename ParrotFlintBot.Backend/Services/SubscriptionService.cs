@@ -15,7 +15,8 @@ public class SubscriptionService : ISubscriptionService
     private readonly ILogger<SubscriptionService> _logger;
     private readonly RabbitMQPublisher _publisher;
     private readonly RabbitMQConfiguration _rabbitConfig;
-    private readonly string _routeKey;
+    private readonly string _crawlRouteKey;
+    private readonly string _updatesRouteKey;
 
     public SubscriptionService(IKSCrawlerUnitOfWork dbConnection, ILogger<SubscriptionService> logger,
         RabbitMQPublisher publisher, IOptions<RabbitMQConfiguration> rabbitConfig)
@@ -25,8 +26,10 @@ public class SubscriptionService : ISubscriptionService
         
         _publisher = publisher;
         _rabbitConfig = rabbitConfig.Value;
-        rabbitConfig.Value.PublisherRouteKeys.TryGetValue(RouteKeyNames.ProjectsToCrawl, out var route);
-        _routeKey = string.IsNullOrWhiteSpace(route) ? RouteKeyNames.ProjectsToCrawl : route;
+        rabbitConfig.Value.PublisherRouteKeys.TryGetValue(RouteKeyNames.ProjectsToCrawl, out var crawlRoute);
+        _crawlRouteKey = string.IsNullOrWhiteSpace(crawlRoute) ? RouteKeyNames.ProjectsToCrawl : crawlRoute;
+        rabbitConfig.Value.PublisherRouteKeys.TryGetValue(RouteKeyNames.UpdatesNotification, out var updatesRoute);
+        _updatesRouteKey = string.IsNullOrWhiteSpace(updatesRoute) ? RouteKeyNames.UpdatesNotification : updatesRoute;
     }
 
     public async Task<bool> ProcessSubscribe(UserActionInfo info, CancellationToken stoppingToken)
@@ -39,9 +42,17 @@ public class SubscriptionService : ISubscriptionService
             var user = await _db.Users.CreateIfNotExist(info.ChatId, stoppingToken);
             if (info.ProjectLink is not null)
             {
-                project = await _db.Projects.CreateIfNotExist(info.ProjectLink.GetProjectSlug(),
-                    info.ProjectLink.GetCreatorSlug(), info.ProjectLink.GetSiteName(), stoppingToken);
-                user.Projects.Add(project);
+                var currentSubscription = user.Projects.ContainsEqualProject(info.ProjectLink);
+                if (currentSubscription is null)
+                {
+                    project = await _db.Projects.CreateIfNotExist(info.ProjectLink.GetProjectSlug(),
+                        info.ProjectLink.GetCreatorSlug(), info.ProjectLink.GetSiteName(), stoppingToken);
+                    user.Projects.Add(project);
+                }
+                else
+                {
+                    project = currentSubscription;
+                }
             }
 
             await _db.Commit(stoppingToken);
@@ -58,8 +69,33 @@ public class SubscriptionService : ISubscriptionService
                     PrevUpdatesCount = project.PrevUpdatesCount
                 };
                 var message = JsonSerializer.Serialize(new[] { projectInfo });
-                _publisher.PushMessage(_routeKey,
+                _publisher.PushMessage(_crawlRouteKey,
                     message,
+                    _rabbitConfig.MessageTTL);
+            }
+            else if (project is not null)
+            {
+                var projectNotification = new UpdatesNotification()
+                {
+                    ChatId = user.ChatId,
+                    Updates = new[]
+                    {
+                        new ProjectInfo()
+                        {
+                            ProjectId = project.Id,
+                            Status = project.Status,
+                            Link = project.LastUpdateId is null ? project.GetUrlToCrawl() : project.GetUrlForUpdate(),
+                            ProjectName = project.Name,
+                            PrevStatus = project.Status,
+                            UpdatesCount = project.UpdatesCount,
+                            PrevUpdatesCount = project.PrevUpdatesCount,
+                            LastUpdateId = project.LastUpdateId,
+                            LastUpdateTitle = project.LastUpdateTitle
+                        }
+                    }.ToList()
+                };
+                _publisher.PushMessage(_updatesRouteKey,
+                    new []{ projectNotification },
                     _rabbitConfig.MessageTTL);
             }
             result = true;

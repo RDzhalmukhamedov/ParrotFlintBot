@@ -46,7 +46,7 @@ public class UserRepository : IUserRepository
 
     public async Task<User> CreateIfNotExist(long chatId, CancellationToken stoppingToken)
     {
-        var user = await GetByChatId(chatId, stoppingToken);
+        var user = await GetByChatId(chatId, stoppingToken, true);
         if (user is null)
         {
             user = new User() { ChatId = chatId };
