@@ -82,17 +82,16 @@ public class CommunicationService : ICommunicationService
 
     public async Task SendProjectUpdates(List<UpdatesNotification> updates, CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Sending list of new crawled updates.");
-        IEnumerable<Task> notifications = new List<Task>();
+        _logger.LogInformation("Sending list of new crawled updates for {count} users.", updates.Count);
         // The Telegram API will not allow bulk notifications to more than ~30 users per second,
         // if you go over that, you'll start getting 429 errors.
         foreach (var updatesNotifications in updates.Chunk(30))
         {
-            notifications = updatesNotifications
-                .Select(update => SendUpdateMessages(update, stoppingToken));
-            await Task.Delay(2000, stoppingToken);
-        } ;
-        await Task.WhenAll(notifications);
+            await Task.WhenAll(updatesNotifications
+                .Select(update => SendUpdateMessages(update, stoppingToken)));
+            await Task.Delay(1000, stoppingToken);
+            _logger.LogDebug("Completed processing of chunk for {count} users", updatesNotifications.Length);
+        }
     }
 
     public async Task SendProjectsLists(UpdatesNotification info, CancellationToken stoppingToken)
@@ -135,6 +134,8 @@ public class CommunicationService : ICommunicationService
 
     private async Task<Message[]> SendUpdateMessages(UpdatesNotification update, CancellationToken stoppingToken)
     {
+        _logger.LogInformation("Called send updates for {chatId} with {count} projects", update.ChatId,
+            update.Updates.Count);
         StringBuilder sb = new StringBuilder();
         var updateMessages = update.Updates.Select(u =>
         {
@@ -145,9 +146,9 @@ public class CommunicationService : ICommunicationService
 
             if (u.UpdatesCount > 0)
             {
-            sb.Append(
-                $"Для *{u.ProjectName.EscapeMdChars()}* вышло *{u.UpdatesCount - u.PrevUpdatesCount}* новых апдейтов\\.");
-            sb.Append(
+                sb.Append(
+                    $"Для *{u.ProjectName.EscapeMdChars()}* вышло *{u.UpdatesCount - u.PrevUpdatesCount}* новых апдейтов\\.");
+                sb.Append(
                     $"\nПоследний: [{(string.IsNullOrWhiteSpace(u.LastUpdateTitle) ? u.Link : u.LastUpdateTitle).EscapeMdChars()}]({u.Link})");
             }
             else
