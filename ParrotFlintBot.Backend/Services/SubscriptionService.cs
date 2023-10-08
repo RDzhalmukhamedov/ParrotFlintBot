@@ -34,7 +34,8 @@ public class SubscriptionService : ISubscriptionService
 
     public async Task<bool> ProcessSubscribe(UserActionInfo info, CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Called subscription to project updates.");
+        _logger.LogInformation("Called subscription to project {Project} updates from {ChatId}.",
+            info.ProjectLink, info.ChatId);
         var result = false;
         Project? project = null;
         try
@@ -110,7 +111,8 @@ public class SubscriptionService : ISubscriptionService
 
     public async Task<bool> ProcessUnsubscribe(UserActionInfo info, CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Called unsubscription to project updates.");
+        _logger.LogInformation("Called unsubscription to project {Project} updates from {ChatId}.",
+            info.ProjectLink, info.ChatId);
         var result = false;
         try
         {

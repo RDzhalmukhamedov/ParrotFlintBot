@@ -36,7 +36,7 @@ public class ProjectsManagerService : IProjectsManagerService
 
     public async Task<bool> ProcessNewUpdates(List<ProjectInfo> updatesInfo, CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Started updating information about projects.");
+        _logger.LogInformation("Started updating information about {Count} projects.", updatesInfo.Count);
         try
         {
             await _db.Projects.BulkUpdate(updatesInfo, stoppingToken);
@@ -54,7 +54,7 @@ public class ProjectsManagerService : IProjectsManagerService
                     ChatId = user.ChatId,
                     Updates = updates.ToList()
                 };
-            });
+            }).Where(n => !n.Updates.IsNullOrEmpty());
             
             _publisher.PushMessage(_updatesRouteKey, updateNotifications, _rabbitConfig.MessageTTL);
             return true;
@@ -68,7 +68,7 @@ public class ProjectsManagerService : IProjectsManagerService
 
     public async Task<bool> ProcessProjectsList(long chatId, CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Started getting information about projects for user.");
+        _logger.LogInformation("Started getting list of projects for user {ChatId}.", chatId);
         try
         {
             var user = await _db.Users.GetByChatId(chatId, stoppingToken, true);
