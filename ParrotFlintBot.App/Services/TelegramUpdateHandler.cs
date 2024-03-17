@@ -23,9 +23,9 @@ public class TelegramUpdateHandler : IUpdateHandler
     {
         var handler = update switch
         {
-            { Message: { } message }       => BotOnMessageReceived(message, stoppingToken),
+            { Message: { } message } => BotOnMessageReceived(message, stoppingToken),
             { EditedMessage: { } message } => BotOnMessageReceived(message, stoppingToken),
-            _                              => UnknownUpdateHandler(update)
+            _ => UnknownUpdateHandler(update)
         };
 
         await handler;
@@ -41,7 +41,7 @@ public class TelegramUpdateHandler : IUpdateHandler
             _ => exception.ToString()
         };
 
-        _logger.LogInformation("HandleError: {ErrorMessage}", errorMessage);
+        _logger.LogError("HandleError: {ErrorMessage}", errorMessage);
 
         if (exception is RequestException)
             await Task.Delay(TimeSpan.FromSeconds(2), stoppingToken);
@@ -56,7 +56,7 @@ public class TelegramUpdateHandler : IUpdateHandler
         var words = messageText.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
         var action = words[0] switch
         {
-            "/sub" or "/s"   => _communication.RequestManageSubscription(message.Chat.Id,
+            "/sub" or "/s" => _communication.RequestManageSubscription(message.Chat.Id,
                                         words.Length > 1 ? words[1] : string.Empty,
                                         UserActionType.Subscribe,
                                         stoppingToken),
@@ -65,17 +65,17 @@ public class TelegramUpdateHandler : IUpdateHandler
                                         UserActionType.Unsubscribe,
                                         stoppingToken),
             "/projects" or "/list" => _communication.RequestProjectsList(message, stoppingToken),
-            _                => _communication.SendUsage(message, stoppingToken)
+            _ => _communication.SendUsage(message, stoppingToken)
         };
         Message sentMessage = await action;
         _logger.LogInformation("The message was sent with id: {SentMessageId}", sentMessage.MessageId);
     }
 
-// #pragma warning disable IDE0060 // Remove unused parameter
-// #pragma warning disable RCS1163 // Unused parameter.
+    // #pragma warning disable IDE0060 // Remove unused parameter
+    // #pragma warning disable RCS1163 // Unused parameter.
     private Task UnknownUpdateHandler(Update update)
-// #pragma warning restore RCS1163 // Unused parameter.
-// #pragma warning restore IDE0060 // Remove unused parameter
+    // #pragma warning restore RCS1163 // Unused parameter.
+    // #pragma warning restore IDE0060 // Remove unused parameter
     {
         _logger.LogInformation("Unknown update type: {UpdateType}", update.Type);
         return Task.CompletedTask;

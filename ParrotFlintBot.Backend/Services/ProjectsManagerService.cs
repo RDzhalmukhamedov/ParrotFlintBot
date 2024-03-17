@@ -55,13 +55,13 @@ public class ProjectsManagerService : IProjectsManagerService
                     Updates = updates.ToList()
                 };
             }).Where(n => !n.Updates.IsNullOrEmpty());
-            
+
             _publisher.PushMessage(_updatesRouteKey, updateNotifications, _rabbitConfig.MessageTTL);
             return true;
         }
         catch (Exception ex)
         {
-            _logger.LogInformation("Updating information about projects failed with exception {Exception}", ex);
+            _logger.LogError("Updating information about projects failed with exception {Exception}", ex);
             return false;
         }
     }

@@ -23,7 +23,7 @@ public class SubscriptionService : ISubscriptionService
     {
         _db = dbConnection;
         _logger = logger;
-        
+
         _publisher = publisher;
         _rabbitConfig = rabbitConfig.Value;
         rabbitConfig.Value.PublisherRouteKeys.TryGetValue(RouteKeyNames.ProjectsToCrawl, out var crawlRoute);
@@ -96,14 +96,14 @@ public class SubscriptionService : ISubscriptionService
                     }.ToList()
                 };
                 _publisher.PushMessage(_updatesRouteKey,
-                    new []{ projectNotification },
+                    new[] { projectNotification },
                     _rabbitConfig.MessageTTL);
             }
             result = true;
         }
         catch (Exception ex)
         {
-            _logger.LogInformation("Subscription to project updates failed with exception {Exception}", ex);
+            _logger.LogError("Subscription to project updates failed with exception {Exception}", ex);
         }
 
         return result;
@@ -135,7 +135,7 @@ public class SubscriptionService : ISubscriptionService
         }
         catch (Exception ex)
         {
-            _logger.LogInformation("Unsubscription to project updates failed with exception {Exception}", ex);
+            _logger.LogError("Unsubscription to project updates failed with exception {Exception}", ex);
         }
 
         return result;
