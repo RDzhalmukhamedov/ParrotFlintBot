@@ -34,6 +34,7 @@ public class CommunicationService : ICommunicationService
 
     public async Task<Message> RequestManageSubscription(
         long chatId,
+        string userId,
         string url,
         UserActionType actionType,
         CancellationToken stoppingToken)
@@ -52,7 +53,7 @@ public class CommunicationService : ICommunicationService
                     ? $"Вы успешно подписались на обновления для {link.GetLeftPart(UriPartial.Path)}"
                     : $"Вы успешно отписались от получения обновлений для {link.GetLeftPart(UriPartial.Path)}";
                 
-                _publisher.PushMessage(_routeKey, new UserActionInfo(chatId, link, actionType), _config.MessageTTL);
+                _publisher.PushMessage(_routeKey, new UserActionInfo(chatId, userId, link, actionType), _config.MessageTTL);
                 // TODO Use events instead (later)
                 var ack = _publisher.WaitForAck();
                 message = ack ? successMessage : "Что-то пошло не так, попробуйте позже";
@@ -76,7 +77,7 @@ public class CommunicationService : ICommunicationService
     public async Task<Message> RequestProjectsList(Message message, CancellationToken stoppingToken)
     {
         _logger.LogInformation("Called getting list of projects from {chatId}", message.Chat.Id);
-        _publisher.PushMessage(_routeKey, new UserActionInfo(message.Chat.Id, projectLink: null, UserActionType.List), _config.MessageTTL);
+        _publisher.PushMessage(_routeKey, new UserActionInfo(message.Chat.Id, message.Chat.Username!, projectLink: null, UserActionType.List), _config.MessageTTL);
         return await Task.FromResult(message);
     }
 

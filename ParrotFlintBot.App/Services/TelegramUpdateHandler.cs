@@ -56,11 +56,11 @@ public class TelegramUpdateHandler : IUpdateHandler
         var words = messageText.Split(' ', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
         var action = words[0] switch
         {
-            "/sub" or "/s" => _communication.RequestManageSubscription(message.Chat.Id,
+            "/sub" or "/s" => _communication.RequestManageSubscription(message.Chat.Id, message.Chat.Username!,
                                         words.Length > 1 ? words[1] : string.Empty,
                                         UserActionType.Subscribe,
                                         stoppingToken),
-            "/unsub" or "/u" => _communication.RequestManageSubscription(message.Chat.Id,
+            "/unsub" or "/u" => _communication.RequestManageSubscription(message.Chat.Id, message.Chat.Username!,
                                         words.Length > 1 ? words[1] : string.Empty,
                                         UserActionType.Unsubscribe,
                                         stoppingToken),

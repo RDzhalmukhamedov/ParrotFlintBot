@@ -5,7 +5,7 @@ namespace ParrotFlintBot.App.Abstract;
 
 public interface ICommunicationService
 {
-    Task<Message> RequestManageSubscription(long chatId, string link, UserActionType actionType, CancellationToken stoppingToken);
+    Task<Message> RequestManageSubscription(long chatId, string userId, string link, UserActionType actionType, CancellationToken stoppingToken);
 
     Task<Message> RequestProjectsList(Message message, CancellationToken stoppingToken);
 
