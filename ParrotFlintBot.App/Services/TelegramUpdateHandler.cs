@@ -80,4 +80,10 @@ public class TelegramUpdateHandler : IUpdateHandler
         _logger.LogInformation("Unknown update type: {UpdateType}", update.Type);
         return Task.CompletedTask;
     }
+
+    public Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, HandleErrorSource source, CancellationToken cancellationToken)
+	{
+		_logger.LogError("Telegram error handled: {Exception} with source {Source}", exception, source);
+		return Task.CompletedTask;
+	}
 }

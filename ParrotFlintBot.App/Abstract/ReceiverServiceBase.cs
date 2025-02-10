@@ -31,9 +31,9 @@ public class ReceiverServiceBase<TUpdateHandler> : IReceiverService
         var receiverOptions = new ReceiverOptions()
         {
             AllowedUpdates = Array.Empty<UpdateType>(),
-            ThrowPendingUpdates = _config.ThrowPendingUpdates,
+            DropPendingUpdates = _config.ThrowPendingUpdates,
         };
-        var me = await _botClient.GetMeAsync(stoppingToken);
+        var me = await _botClient.GetMe(stoppingToken);
 
         _logger.LogInformation("Start receiving updates for {BotName}", me.Username ?? "Parrot Flint Bot");
         await _botClient.ReceiveAsync(

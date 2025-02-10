@@ -66,10 +66,10 @@ public class CommunicationService : ICommunicationService
                     : $"Кажется вы не написали ссылку. Чтобы отписаться от получения обновлений о проекте, отправьте сообщение в виде /u Ссылка_на_проект";
         }
 
-        return await _botClient.SendTextMessageAsync(
+        return await _botClient.SendMessage(
             chatId: chatId,
             text: message,
-            disableWebPagePreview: true,
+            linkPreviewOptions: new LinkPreviewOptions() { IsDisabled = true },
             cancellationToken: stoppingToken);
     }
 
@@ -100,13 +100,13 @@ public class CommunicationService : ICommunicationService
 
         if (info.Updates.IsNullOrEmpty())
         {
-            await _botClient.SendTextMessageAsync(
+            await _botClient.SendMessage(
                 chatId: info.ChatId,
                 text: "У вас пока нет подписок на проекты\\.",
                 parseMode: ParseMode.MarkdownV2,
                 disableNotification: true,
-                disableWebPagePreview: true,
-                cancellationToken: stoppingToken);
+			    linkPreviewOptions: new LinkPreviewOptions() { IsDisabled = true },
+				cancellationToken: stoppingToken);
         }
         else
         {
@@ -126,7 +126,7 @@ public class CommunicationService : ICommunicationService
                              "\n/u {Ссылка} – отписаться от проекта по ссылке" +
                              "\n/list – список проектов, на которые вы подписаны";
 
-        return await _botClient.SendTextMessageAsync(
+        return await _botClient.SendMessage(
             chatId: message.Chat.Id,
             text: usage,
             cancellationToken: stoppingToken);
@@ -158,13 +158,13 @@ public class CommunicationService : ICommunicationService
             }
             var message = sb.ToString();
             sb.Clear();
-            return _botClient.SendTextMessageAsync(
+            return _botClient.SendMessage(
                 chatId: update.ChatId,
                 text: message,
                 parseMode: ParseMode.MarkdownV2,
                 disableNotification: true,
-                disableWebPagePreview: true,
-                cancellationToken: stoppingToken);
+			    linkPreviewOptions: new LinkPreviewOptions() { IsDisabled = true },
+				cancellationToken: stoppingToken);
         });
         return await Task.WhenAll(updateMessages);
     }
@@ -184,13 +184,13 @@ public class CommunicationService : ICommunicationService
             sb.Append(
                 $"[{project.ProjectName.EscapeMdChars()}]({project.Link}) {project.UpdatesCount} апдейтов\n");
         }
-        return await _botClient.SendTextMessageAsync(
+        return await _botClient.SendMessage(
             chatId: chatId,
             text: sb.ToString(),
             parseMode: ParseMode.MarkdownV2,
             disableNotification: true,
-            disableWebPagePreview: true,
-            cancellationToken: stoppingToken);
+			linkPreviewOptions: new LinkPreviewOptions() { IsDisabled = true },
+			cancellationToken: stoppingToken);
     }
 
     private async Task<Uri?> UnshortenLink(Uri url, CancellationToken stoppingToken)

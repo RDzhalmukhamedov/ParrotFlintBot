@@ -1,16 +1,25 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParrotFlintBot.App", "ParrotFlintBot.App\ParrotFlintBot.App.csproj", "{0AC78170-6B8C-4EA7-8237-B4E97CA57DD1}"
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35707.178 d17.12
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ParrotFlintBot.App", "ParrotFlintBot.App\ParrotFlintBot.App.csproj", "{0AC78170-6B8C-4EA7-8237-B4E97CA57DD1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParrotFlintBot.DB", "ParrotFlintBot.DB\ParrotFlintBot.DB.csproj", "{A1937BA4-F6A2-4686-94DD-1A5657F24553}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ParrotFlintBot.DB", "ParrotFlintBot.DB\ParrotFlintBot.DB.csproj", "{A1937BA4-F6A2-4686-94DD-1A5657F24553}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParrotFlintBot.Domain", "ParrotFlintBot.Domain\ParrotFlintBot.Domain.csproj", "{086840AD-F31D-49CA-93AF-195CB074CD28}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ParrotFlintBot.Domain", "ParrotFlintBot.Domain\ParrotFlintBot.Domain.csproj", "{086840AD-F31D-49CA-93AF-195CB074CD28}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParrotFlintBot.RabbitMQ", "ParrotFlintBot.RabbitMQ\ParrotFlintBot.RabbitMQ.csproj", "{6CDFDF25-3F48-4CD8-84AD-223D3CCA2D86}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ParrotFlintBot.RabbitMQ", "ParrotFlintBot.RabbitMQ\ParrotFlintBot.RabbitMQ.csproj", "{6CDFDF25-3F48-4CD8-84AD-223D3CCA2D86}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParrotFlintBot.Shared", "ParrotFlintBot.Shared\ParrotFlintBot.Shared.csproj", "{27AE99CE-53DF-4954-8CE5-71025F017919}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ParrotFlintBot.Shared", "ParrotFlintBot.Shared\ParrotFlintBot.Shared.csproj", "{27AE99CE-53DF-4954-8CE5-71025F017919}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParrotFlintBot.Backend", "ParrotFlintBot.Backend\ParrotFlintBot.Backend.csproj", "{014714A7-FBE8-4079-B05D-0096CC42F5B1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ParrotFlintBot.Backend", "ParrotFlintBot.Backend\ParrotFlintBot.Backend.csproj", "{014714A7-FBE8-4079-B05D-0096CC42F5B1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParrotFlintBot.RSSReader", "ParrotFlintBot.RSSReader\ParrotFlintBot.RSSReader.csproj", "{89C1AE61-A114-4918-84BE-5E15355CD694}"
+	ProjectSection(ProjectDependencies) = postProject
+		{27AE99CE-53DF-4954-8CE5-71025F017919} = {27AE99CE-53DF-4954-8CE5-71025F017919}
+		{6CDFDF25-3F48-4CD8-84AD-223D3CCA2D86} = {6CDFDF25-3F48-4CD8-84AD-223D3CCA2D86}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -42,5 +51,15 @@ Global
 		{014714A7-FBE8-4079-B05D-0096CC42F5B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{014714A7-FBE8-4079-B05D-0096CC42F5B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{014714A7-FBE8-4079-B05D-0096CC42F5B1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{89C1AE61-A114-4918-84BE-5E15355CD694}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{89C1AE61-A114-4918-84BE-5E15355CD694}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{89C1AE61-A114-4918-84BE-5E15355CD694}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{89C1AE61-A114-4918-84BE-5E15355CD694}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E9CC5022-C570-45FF-945D-1CB0B8E8E3E9}
 	EndGlobalSection
 EndGlobal
