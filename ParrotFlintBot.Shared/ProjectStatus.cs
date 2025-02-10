@@ -6,5 +6,7 @@ public enum ProjectStatus
     Live = 1,
     Funded = 2,
     Completed = 3,
-    Canceled = -1,
+    LatePledge = 4,
+    Undefined = -1,
+    Canceled = -2,
 }

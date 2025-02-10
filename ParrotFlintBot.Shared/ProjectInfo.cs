@@ -20,4 +20,8 @@ public class ProjectInfo
     public short UpdatesCount { get; set; }
     
     public short PrevUpdatesCount { get; set; }
+
+    public long? ProjectIdOnSite { get; set; }
+
+    public bool NeedFullCrawl { get; set; }
 }

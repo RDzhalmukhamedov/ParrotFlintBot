@@ -38,11 +38,53 @@ public class ProjectRepository : IProjectRepository
             {
                 ProjectId = p.Id,
                 Status = p.Status,
-                Link = p.GetUrlToCrawl(),
+                Link = p.GetUrlToFullCrawl(),
                 ProjectName = p.Name,
                 PrevStatus = p.Status,
                 UpdatesCount = p.UpdatesCount,
-                PrevUpdatesCount = p.PrevUpdatesCount
+                PrevUpdatesCount = p.PrevUpdatesCount,
+                ProjectIdOnSite = p.ProjectId,
+                NeedFullCrawl = p.NeedFullCrawl,
+            });
+        return await result.ToListAsync(stoppingToken);
+    }
+
+    public async Task<List<ProjectInfo>> GetAllProjectsInfoForSimpleCrawl(CancellationToken stoppingToken)
+    {
+        var result = _context.Projects
+            .Where(p => p.Users.Count > 0)
+            .Where(p => !p.NeedFullCrawl && p.Status != ProjectStatus.NotTracked)
+            .Select(p => new ProjectInfo()
+            {
+                ProjectId = p.Id,
+                Status = p.Status,
+                Link = p.GetUrlToFullCrawl(),
+                ProjectName = p.Name,
+                PrevStatus = p.Status,
+                UpdatesCount = p.UpdatesCount,
+                PrevUpdatesCount = p.PrevUpdatesCount,
+                ProjectIdOnSite = p.ProjectId,
+                NeedFullCrawl = p.NeedFullCrawl,
+            });
+        return await result.ToListAsync(stoppingToken);
+    }
+
+    public async Task<List<ProjectInfo>> GetAllProjectsInfoForFullCrawl(CancellationToken stoppingToken)
+    {
+        var result = _context.Projects
+            .Where(p => p.Users.Count > 0)
+            .Where(p => p.NeedFullCrawl || p.Status == ProjectStatus.NotTracked)
+            .Select(p => new ProjectInfo()
+            {
+                ProjectId = p.Id,
+                Status = p.Status,
+                Link = p.GetUrlToFullCrawl(),
+                ProjectName = p.Name,
+                PrevStatus = p.Status,
+                UpdatesCount = p.UpdatesCount,
+                PrevUpdatesCount = p.PrevUpdatesCount,
+                ProjectIdOnSite = p.ProjectId,
+                NeedFullCrawl = p.NeedFullCrawl,
             });
         return await result.ToListAsync(stoppingToken);
     }
@@ -87,6 +129,8 @@ public class ProjectRepository : IProjectRepository
             LastUpdateTitle = info.LastUpdateTitle,
             UpdatesCount = info.UpdatesCount,
             PrevUpdatesCount = info.PrevUpdatesCount,
+            ProjectId = info.ProjectIdOnSite,
+            NeedFullCrawl = info.NeedFullCrawl,
         };
         _context.Projects.Attach(project);
         _context.Projects.Entry(project).Property(p => p.Name).IsModified = true;
@@ -95,6 +139,8 @@ public class ProjectRepository : IProjectRepository
         _context.Projects.Entry(project).Property(p => p.LastUpdateTitle).IsModified = true;
         _context.Projects.Entry(project).Property(p => p.UpdatesCount).IsModified = true;
         _context.Projects.Entry(project).Property(p => p.PrevUpdatesCount).IsModified = true;
+        _context.Projects.Entry(project).Property(p => p.ProjectId).IsModified = true;
+        _context.Projects.Entry(project).Property(p => p.NeedFullCrawl).IsModified = true;
 
         return Task.CompletedTask;
     }

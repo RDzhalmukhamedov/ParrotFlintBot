@@ -26,6 +26,14 @@ public class UserRepository : IUserRepository
         return await users.FirstOrDefaultAsync(u => u.ChatId == chatId, stoppingToken);
     }
 
+    public async Task<User?> GetByUserId(string userId, CancellationToken stoppingToken, bool includeProjects = false)
+    {
+        var users = includeProjects
+            ? _context.Users.Include(u => u.Projects)
+            : _context.Users.AsQueryable();
+        return await users.FirstOrDefaultAsync(u => u.UserId == userId, stoppingToken);
+    }
+
     public async Task<List<User>> GetAll(CancellationToken stoppingToken)
     {
         return await _context.Users.ToListAsync(stoppingToken);
