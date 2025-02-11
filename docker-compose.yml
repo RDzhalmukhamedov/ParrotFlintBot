@@ -1,4 +1,17 @@
-version: '1.3'
+# services:
+#   parrotflintbot.app:
+#     image: ${DOCKER_REGISTRY-}parrotflintbotapp
+#     build:
+#       context: .
+#       dockerfile: ParrotFlintBot.App/Dockerfile
+
+#   parrotflintbot.backend:
+#     image: ${DOCKER_REGISTRY-}parrotflintbotbackend
+#     build:
+#       context: .
+#       dockerfile: ParrotFlintBot.Backend/Dockerfile
+
+version: '2.0'
 
 services:
   app:

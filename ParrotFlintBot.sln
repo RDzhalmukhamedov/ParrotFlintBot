@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35707.178 d17.12
+VisualStudioVersion = 17.12.35707.178
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ParrotFlintBot.App", "ParrotFlintBot.App\ParrotFlintBot.App.csproj", "{0AC78170-6B8C-4EA7-8237-B4E97CA57DD1}"
 EndProject
@@ -20,6 +20,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParrotFlintBot.RSSReader", 
 		{27AE99CE-53DF-4954-8CE5-71025F017919} = {27AE99CE-53DF-4954-8CE5-71025F017919}
 		{6CDFDF25-3F48-4CD8-84AD-223D3CCA2D86} = {6CDFDF25-3F48-4CD8-84AD-223D3CCA2D86}
 	EndProjectSection
+EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{4380D5F4-B504-4DD1-A7DA-440B66467C47}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -55,6 +57,10 @@ Global
 		{89C1AE61-A114-4918-84BE-5E15355CD694}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{89C1AE61-A114-4918-84BE-5E15355CD694}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{89C1AE61-A114-4918-84BE-5E15355CD694}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4380D5F4-B504-4DD1-A7DA-440B66467C47}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4380D5F4-B504-4DD1-A7DA-440B66467C47}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4380D5F4-B504-4DD1-A7DA-440B66467C47}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4380D5F4-B504-4DD1-A7DA-440B66467C47}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
