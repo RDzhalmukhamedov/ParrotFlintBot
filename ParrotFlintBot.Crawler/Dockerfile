@@ -13,12 +13,6 @@ RUN npm run build
 ENV NODE_ENV production
 
 RUN npm ci --only=production && npm cache clean --force
-USER node
-
-FROM node:18-alpine As production
-
-COPY --chown=node:node --from=build /usr/src/app/node_modules ./node_modules
-COPY --chown=node:node --from=build /usr/src/app/dist ./dist
 
 # Create a user with a known UID/GID within range 10000-20000.
 # This is required by Choreo to run the container as a non-root user.
@@ -30,6 +24,14 @@ RUN adduser \
     --no-create-home \
     --uid 10014 \
     "choreo"
+
+USER node
+
+FROM node:18-alpine As production
+
+COPY --chown=node:node --from=build /usr/src/app/node_modules ./node_modules
+COPY --chown=node:node --from=build /usr/src/app/dist ./dist
+
 # Use the above created unprivileged user
 USER 10014
 
