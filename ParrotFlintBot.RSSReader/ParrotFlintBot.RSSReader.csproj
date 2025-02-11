@@ -1,9 +1,13 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include=".choreo\component.yaml" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="BetterStack.Logs.NLog" Version="1.0.0" />

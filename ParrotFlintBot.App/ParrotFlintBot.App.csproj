@@ -31,4 +31,8 @@
       <ProjectReference Include="..\ParrotFlintBot.Shared\ParrotFlintBot.Shared.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Include=".choreo\component.yaml" />
+    </ItemGroup>
+
 </Project>
