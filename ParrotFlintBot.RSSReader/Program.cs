@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using NLog;
 using NLog.Web;
 using ParrotFlintBot.RabbitMQ;
+using ParrotFlintBot.RSSReader.Services;
 using ParrotFlintBot.Shared;
 
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
@@ -19,26 +20,11 @@ IHost host = Host.CreateDefaultBuilder(args)
 	.ConfigureServices((context, services) =>
 	{
 		services.Configure<AppConfig>(context.Configuration.GetSection(AppConfig.Configuration));
-		//services.Configure<DbConfiguration>(context.Configuration.GetSection(DbConfiguration.Configuration));
-		services.Configure<RabbitMQConfiguration>(
-			context.Configuration.GetSection(RabbitMQConfiguration.Configuration));
-		//services.Configure<CronConfiguration>(context.Configuration.GetSection(CronConfiguration.Configuration));
+		services.Configure<RabbitMQConfiguration>(context.Configuration.GetSection(RabbitMQConfiguration.Configuration));
 
-		//services.AddDbContext<KSCrawlerContext>();
+        services.AddHostedService<ProjectsToCrawlListener>();
 
-		//services.AddTransient<IUserRepository, UserRepository>();
-		//services.AddTransient<IProjectRepository, ProjectRepository>();
-		//services.AddTransient<IAppSettingsRepository, AppSettingsRepository>();
-		//services.AddTransient<IKSCrawlerUnitOfWork, KSCrawlerUnitOfWork>();
-
-		//services.AddScoped<ISubscriptionService, SubscriptionService>();
-		//services.AddScoped<IProjectsManagerService, ProjectsManagerService>();
-
-		//services.AddHostedService<UserActionsListener>();
-		//services.AddHostedService<CrawledUpdatesListener>();
-		//services.AddHostedService<ProjectsToCrawlPublisher>();
-
-		services.AddSingleton<RabbitMQPublisher>();
+        services.AddSingleton<RabbitMQPublisher>();
 	})
 	.Build();
 
