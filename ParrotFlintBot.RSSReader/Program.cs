@@ -13,9 +13,9 @@ IHost host = Host.CreateDefaultBuilder(args)
 	{
 		logging.ClearProviders();
 		logging.SetMinimumLevel(LogLevel.Trace);
-		LogManager.Setup().LoadConfigurationFromAppSettings();
+		//LogManager.Setup().LoadConfigurationFromAppSettings();
 	})
-	.UseNLog()
+	//.UseNLog()
 	.ConfigureServices((context, services) =>
 	{
 		services.Configure<AppConfig>(context.Configuration.GetSection(AppConfig.Configuration));
