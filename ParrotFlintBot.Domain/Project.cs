@@ -41,5 +41,9 @@ public class Project
     
     public string Site { get; set; }
 
+    public long? ProjectId {  get; set; }
+
+    public bool NeedFullCrawl { get; set; }
+
     public ICollection<User> Users { get; } = new List<User>();
 }

@@ -10,4 +10,6 @@ export interface ProjectInfo {
   LastUpdateTitle: string | null;
   UpdatesCount: number;
   PrevUpdatesCount: number;
+  ProjectIdOnSite: number | null;
+  NeedFullCrawl: boolean;
 }
