@@ -4,7 +4,7 @@ namespace ParrotFlintBot.Domain;
 
 public static class Extensions
 {
-    public static string GetUrlToCrawl(this Project project)
+    public static string GetUrlToFullCrawl(this Project project)
     {
         if (project.Site.Equals("kickstarter"))
         {
@@ -15,6 +15,18 @@ public static class Extensions
             return $"https://gamefound.com/projects/{project.CreatorSlug}/{project.ProjectSlug}/updates";
         }
     }
+    public static string GetUrlToSimpleCrawl(this Project project)
+    {
+        if (project.Site.Equals("kickstarter"))
+        {
+            return $"https://www.kickstarter.com/projects/{project.CreatorSlug}/{project.ProjectSlug}/posts.atom";
+        }
+        else
+        {
+            return $"https://gamefound.com//api/projectUpdates/searchProjectUpdates";
+        }
+    }
+
     public static string GetUrlForUpdate(this Project project)
     {
         if (project.Site.Equals("kickstarter"))

@@ -16,9 +16,13 @@ public class ProjectsToCrawlPublisher : IHostedService, IDisposable
     private readonly ILogger<ProjectsToCrawlPublisher> _logger;
     private readonly RabbitMQPublisher _publisher;
     private readonly RabbitMQConfiguration _rabbitConfig;
-    private System.Timers.Timer? _timer;
-    private readonly CronExpression _expression;
-    private readonly string _routeKey;
+    private readonly CronExpression _fullCrawlExpression;
+    private readonly CronExpression _simpleCrawlExpression;
+    private readonly string _fullCrawlRouteKey;
+    private readonly string _simpleCrawlRouteKey;
+
+    private System.Timers.Timer? _fullCrawlTimer;
+    private System.Timers.Timer? _simpleCrawlTimer;
 
     public ProjectsToCrawlPublisher(
         RabbitMQPublisher publisher,
@@ -30,95 +34,97 @@ public class ProjectsToCrawlPublisher : IHostedService, IDisposable
         _publisher = publisher;
         _serviceProvider = serviceProvider;
         _logger = logger;
-        _expression = CronExpression.Parse(cronConfig.Value.Expression);
+        _fullCrawlExpression = CronExpression.Parse(cronConfig.Value.FullCrawlExpression);
+        _simpleCrawlExpression = CronExpression.Parse(cronConfig.Value.LiteCrawlExpression);
         _rabbitConfig = rabbitConfig.Value;
 
-        rabbitConfig.Value.PublisherRouteKeys.TryGetValue(RouteKeyNames.ProjectsToCrawl, out var route);
-        _routeKey = string.IsNullOrWhiteSpace(route) ? RouteKeyNames.ProjectsToCrawl : route;
+        rabbitConfig.Value.PublisherRouteKeys.TryGetValue(RouteKeyNames.ProjectsToFullCrawl, out var route);
+        _fullCrawlRouteKey = string.IsNullOrWhiteSpace(route) ? RouteKeyNames.ProjectsToFullCrawl : route;
+        rabbitConfig.Value.PublisherRouteKeys.TryGetValue(RouteKeyNames.ProjectsToSimpleCrawl, out route);
+        _simpleCrawlRouteKey = string.IsNullOrWhiteSpace(route) ? RouteKeyNames.ProjectsToSimpleCrawl : route;
     }
 
     public async Task StartAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation("ProjectsToCrawlPublisher Service running.");
-        await ScheduleCrawl(stoppingToken);
+        await ScheduleSimpleCrawl(stoppingToken);
+        await ScheduleFullCrawl(stoppingToken);
     }
 
     public async Task StopAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation("ProjectsToCrawlPublisher Service is stopping.");
-        _timer?.Stop();
-        _timer?.Dispose();
+
+        _fullCrawlTimer?.Stop();
+        _fullCrawlTimer?.Dispose();
+
+        _simpleCrawlTimer?.Stop();
+        _simpleCrawlTimer?.Dispose();
+
         await Task.CompletedTask;
     }
 
     public void Dispose()
     {
-        _timer?.Dispose();
+        _fullCrawlTimer?.Dispose();
+        _simpleCrawlTimer?.Dispose();
     }
 
-    private async Task ScheduleCrawl(CancellationToken stoppingToken)
-    {
-        try
-        {
-            var next = await GetNextCrawlDate(stoppingToken);
-            if (next.HasValue)
-            {
-                var delay = next.Value - DateTimeOffset.UtcNow;
-                // Prevent non-positive values from being passed into Timer
-                if (delay.TotalMilliseconds <= 0)
-                {
-                    // Missed last run, starting immediately
-                    await RunCrawl(stoppingToken);
-                }
-                else
-                {
-                    _timer = new System.Timers.Timer(delay.TotalMilliseconds);
-                    _timer.Elapsed += async (sender, args) =>
-                    {
-                        // Reset and dispose timer
-                        _timer.Dispose();
-                        _timer = null;
-                        await RunCrawl(stoppingToken);
-                    };
-                    _timer.Start();
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError("Scheduling of crawl failed with exception {Exception}", ex);
-            
-        }
-    }
-
-    private async Task RunCrawl(CancellationToken stoppingToken)
+    private async Task RunCrawl(Func<CancellationToken, Task> processCrawl,
+        Func<CancellationToken, Task> scheduleCrawl, CancellationToken stoppingToken)
     {
         if (!stoppingToken.IsCancellationRequested)
         {
-            await ProcessCrawl(stoppingToken);
+            await processCrawl(stoppingToken);
         }
 
         if (!stoppingToken.IsCancellationRequested)
         {
             // Reschedule next
-            await ScheduleCrawl(stoppingToken);
+            await scheduleCrawl(stoppingToken);
         }
     }
 
-    private async Task ProcessCrawl(CancellationToken stoppingToken)
+    private Task ScheduleSimpleCrawl(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Crawl process has started.");
+        try
+        {
+            var nextDate = _simpleCrawlExpression.GetNextOccurrence(new DateTimeOffset(DateTime.UtcNow), TimeZoneInfo.Utc);
+            if (nextDate.HasValue)
+            {
+                var delay = nextDate.Value - DateTimeOffset.UtcNow;
+                _simpleCrawlTimer = new System.Timers.Timer(delay.TotalMilliseconds);
+                _simpleCrawlTimer.Elapsed += async (sender, args) =>
+                {
+                    // Reset and dispose timer
+                    _simpleCrawlTimer.Dispose();
+                    _simpleCrawlTimer = null;
+                    await RunCrawl(ProcessSimpleCrawl, ScheduleSimpleCrawl, stoppingToken);
+                };
+                _simpleCrawlTimer.Start();
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Scheduling of simple crawl failed with exception {Exception}", ex);
+
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private async Task ProcessSimpleCrawl(CancellationToken stoppingToken)
+    {
+        _logger.LogInformation("Simple crawl process has started.");
         try
         {
             using (var scope = _serviceProvider.CreateScope())
             {
                 var db = scope.ServiceProvider.GetRequiredService<IKSCrawlerUnitOfWork>();
-                await db.AppSettings.UpdateCrawlDate(DateTime.UtcNow, stoppingToken);
-                await db.Commit(stoppingToken);
-                var projects = await db.Projects.GetAllProjectsInfo(stoppingToken);
+                var projects = await db.Projects.GetAllProjectsInfoForSimpleCrawl(stoppingToken);
                 if (projects.Any())
                 {
-                    _publisher.PushMessage(_routeKey, JsonSerializer.Serialize(projects), _rabbitConfig.MessageTTL);
+                    _publisher.PushMessage(_simpleCrawlRouteKey, JsonSerializer.Serialize(projects), _rabbitConfig.MessageTTL);
                 }
             }
         }
@@ -128,13 +134,71 @@ public class ProjectsToCrawlPublisher : IHostedService, IDisposable
         }
     }
 
-    private async Task<DateTimeOffset?> GetNextCrawlDate(CancellationToken stoppingToken)
+    private async Task ScheduleFullCrawl(CancellationToken stoppingToken)
+    {
+        try
+        {
+            var nextDate = await GetNextFullCrawlDate(stoppingToken);
+            if (nextDate.HasValue)
+            {
+                var delay = nextDate.Value - DateTimeOffset.UtcNow;
+                // Prevent non-positive values from being passed into Timer
+                if (delay.TotalMilliseconds <= 0)
+                {
+                    // Missed last run, starting immediately
+                    await RunCrawl(ProcessFullCrawl, ScheduleFullCrawl, stoppingToken);
+                }
+                else
+                {
+                    _fullCrawlTimer = new System.Timers.Timer(delay.TotalMilliseconds);
+                    _fullCrawlTimer.Elapsed += async (sender, args) =>
+                    {
+                        // Reset and dispose timer
+                        _fullCrawlTimer.Dispose();
+                        _fullCrawlTimer = null;
+                        await RunCrawl(ProcessFullCrawl, ScheduleFullCrawl, stoppingToken);
+                    };
+                    _fullCrawlTimer.Start();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Scheduling of full crawl failed with exception {Exception}", ex);
+            
+        }
+    }
+
+    private async Task ProcessFullCrawl(CancellationToken stoppingToken)
+    {
+        _logger.LogInformation("Full crawl process has started.");
+        try
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<IKSCrawlerUnitOfWork>();
+                await db.AppSettings.UpdateCrawlDate(DateTime.UtcNow, stoppingToken);
+                await db.Commit(stoppingToken);
+                var projects = await db.Projects.GetAllProjectsInfoForFullCrawl(stoppingToken);
+                if (projects.Any())
+                {
+                    _publisher.PushMessage(_fullCrawlRouteKey, JsonSerializer.Serialize(projects), _rabbitConfig.MessageTTL);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Crawl process failed with exception {Exception}", ex);
+        }
+    }
+
+    private async Task<DateTimeOffset?> GetNextFullCrawlDate(CancellationToken stoppingToken)
     {
         using (var scope = _serviceProvider.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<IKSCrawlerUnitOfWork>();
             var lastCrawlDate = await db.AppSettings.GetLastCrawlDate(stoppingToken);
-            var next = _expression.GetNextOccurrence(new DateTimeOffset(lastCrawlDate), TimeZoneInfo.Utc);
+            var next = _fullCrawlExpression.GetNextOccurrence(new DateTimeOffset(lastCrawlDate), TimeZoneInfo.Utc);
             return next;
         }
     }

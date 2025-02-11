@@ -1,58 +1,34 @@
-﻿using System.Text.Json;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using ParrotFlintBot.Backend.Abstract;
+using ParrotFlintBot.Backend.Services.UserActions;
 using ParrotFlintBot.RabbitMQ;
 using ParrotFlintBot.Shared;
+using System.Text.Json;
 
 namespace ParrotFlintBot.Backend.Services;
 
-public class UserActionsListener : RabbitMQListener
+internal class UserActionsListener : RabbitMQListener
 {
-    private readonly IServiceProvider _serviceProvider;
+    private readonly UserActionHandlerFactory _actionFactory;
 
-    public UserActionsListener(IServiceProvider serviceProvider, IOptions<RabbitMQConfiguration> config,
+    public UserActionsListener(UserActionHandlerFactory actionFactory, IOptions<RabbitMQConfiguration> config,
         ILogger<UserActionsListener> logger) : base(config, logger, RouteKeyNames.UserActions,
         nameof(UserActionsListener))
     {
-        _serviceProvider = serviceProvider;
+        _actionFactory = actionFactory;
     }
 
     protected override async Task<bool> ProcessMessage(string message, CancellationToken stoppingToken)
     {
         try
         {
-            var subscriptionInfo = JsonSerializer.Deserialize<UserActionInfo>(message);
-            if (subscriptionInfo is null)
+            var actionInfo = JsonSerializer.Deserialize<UserActionInfo>(message);
+            if (actionInfo is null)
             {
                 return false;
             }
 
-            using (var scope = _serviceProvider.CreateScope())
-            {
-                Task<bool>? result;
-                ISubscriptionService? subscriptionService;
-                switch (subscriptionInfo.Type)
-                {
-                    case UserActionType.Subscribe:
-                        subscriptionService = scope.ServiceProvider.GetRequiredService<ISubscriptionService>();
-                        result = subscriptionService.ProcessSubscribe(subscriptionInfo, stoppingToken);
-                        break;
-                    case UserActionType.Unsubscribe:
-                        subscriptionService = scope.ServiceProvider.GetRequiredService<ISubscriptionService>();
-                        result = subscriptionService.ProcessUnsubscribe(subscriptionInfo, stoppingToken);
-                        break;
-                    case UserActionType.List:
-                        var updatesService = scope.ServiceProvider.GetRequiredService<IProjectsManagerService>();
-                        result = updatesService.ProcessProjectsList(subscriptionInfo.ChatId, stoppingToken);
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(subscriptionInfo.Type));
-                }
-
-                return await result;
-            }
+            return await _actionFactory.GetActionHandler(actionInfo.Type).Process(actionInfo, stoppingToken);
         }
         catch (Exception ex)
         {

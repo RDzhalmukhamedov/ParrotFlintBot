@@ -6,6 +6,7 @@ using NLog.Web;
 using ParrotFlintBot.Backend;
 using ParrotFlintBot.Backend.Abstract;
 using ParrotFlintBot.Backend.Services;
+using ParrotFlintBot.Backend.Services.UserActions;
 using ParrotFlintBot.DB;
 using ParrotFlintBot.DB.Abstract;
 using ParrotFlintBot.RabbitMQ;
@@ -35,8 +36,12 @@ IHost host = Host.CreateDefaultBuilder(args)
         services.AddTransient<IAppSettingsRepository, AppSettingsRepository>();
         services.AddTransient<IKSCrawlerUnitOfWork, KSCrawlerUnitOfWork>();
 
-        services.AddScoped<ISubscriptionService, SubscriptionService>();
-        services.AddScoped<IProjectsManagerService, ProjectsManagerService>();
+        services.AddTransient<IUserActionHandler, SubscribeAction>();
+        services.AddTransient<IUserActionHandler, UnsubscribeAction>();
+        services.AddTransient<IUserActionHandler, ListOfSubsAction>();
+        services.AddTransient<UserActionHandlerFactory>();
+
+        services.AddScoped<IUpdatesManagerService, UpdatesManagerService>();
 
         services.AddHostedService<UserActionsListener>();
         services.AddHostedService<CrawledUpdatesListener>();
