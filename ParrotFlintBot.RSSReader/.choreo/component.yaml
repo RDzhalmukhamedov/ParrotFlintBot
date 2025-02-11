@@ -3,6 +3,5 @@ schemaVersion: 1.0
 endpoints:
 - name: parrot-flint-bot-rss-reader
   service:
-     port: 9091
+     port: 9092
   type: REST
-  networkVisibilities: Organization

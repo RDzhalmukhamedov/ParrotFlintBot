@@ -4,6 +4,5 @@ schemaVersion:
 endpoints:
   - name: parrot-flint-bot-crawler
     service:
-      port: 9090
+      port: 9093
     type: REST
-    networkVisibilities: Organization
