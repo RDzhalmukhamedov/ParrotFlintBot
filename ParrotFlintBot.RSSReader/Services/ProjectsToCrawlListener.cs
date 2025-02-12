@@ -45,9 +45,11 @@ public class ProjectsToCrawlListener : RabbitMQListener
                 return false;
             }
 
+            _logger.LogInformation("Simple crawl process has started.");
             var result = new List<ProjectInfo>();
             foreach (var projectInfo in projectsInfo)
             {
+                _logger.LogInformation($"Simple crawl for {projectInfo.ProjectName}");
                 ProjectInfo update = null;
                 if (projectInfo.Link.Contains("kickstarter", StringComparison.InvariantCultureIgnoreCase))
                 {
@@ -60,6 +62,7 @@ public class ProjectsToCrawlListener : RabbitMQListener
 
                 if (update is not null) result.Add(update);
             }
+            _logger.LogInformation("Simple crawl process has finished.");
 
             _publisher.PushMessage(_updatesRouteKey, result, _rabbitConfig.MessageTTL);
             return true;
@@ -102,6 +105,7 @@ public class ProjectsToCrawlListener : RabbitMQListener
             }
             else
             {
+                _logger.LogInformation("Feed is empty");
                 projectInfo.NeedFullCrawl = true;
             }
 
