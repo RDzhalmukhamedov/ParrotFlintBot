@@ -16,7 +16,7 @@ using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 IHost host = Host.CreateDefaultBuilder(args)
     .ConfigureLogging(logging =>
     {
-        logging.ClearProviders();
+        //logging.ClearProviders();
         logging.SetMinimumLevel(LogLevel.Trace);
         //LogManager.Setup().LoadConfigurationFromAppSettings();
     })
