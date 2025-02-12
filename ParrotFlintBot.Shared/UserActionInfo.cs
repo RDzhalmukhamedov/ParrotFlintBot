@@ -4,30 +4,30 @@ namespace ParrotFlintBot.Shared;
 
 public class UserActionInfo
 {
-    public UserActionType Type { get; set; }
+    public UserActionType Type { get; set; } = UserActionType.Subscribe;
     
     public long? ChatId { get; set; }
 
-    public string UserId { get; set; }
+    public string? UserId { get; set; }
 
-    public Uri? ProjectLink { get; }
+    public Uri? ProjectLink { get; set; }
 
-    public UserActionInfo(long chatId, string userId, string url, UserActionType type = UserActionType.Subscribe)
-    {
-        ChatId = chatId;
-        UserId = userId;
-        ProjectLink = new Uri(url);
-        Type = type;
-    }
+    //public UserActionInfo(long chatId, string userId, string url, UserActionType type = UserActionType.Subscribe)
+    //{
+    //    ChatId = chatId;
+    //    UserId = userId;
+    //    ProjectLink = new Uri(url);
+    //    Type = type;
+    //}
 
-    [JsonConstructor]
-    public UserActionInfo(long chatId, string userId, Uri? projectLink, UserActionType type = UserActionType.Subscribe)
-    {
-        ChatId = chatId;
-        UserId = userId;
-        ProjectLink = projectLink;
-        Type = type;
-    }
+    //[JsonConstructor]
+    //public UserActionInfo(long chatId, string userId, Uri? projectLink, UserActionType type = UserActionType.Subscribe)
+    //{
+    //    ChatId = chatId;
+    //    UserId = userId;
+    //    ProjectLink = projectLink;
+    //    Type = type;
+    //}
 
     public override string ToString()
     {

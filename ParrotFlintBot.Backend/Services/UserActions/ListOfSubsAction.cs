@@ -12,7 +12,7 @@ internal class ListOfSubsAction : BaseUserActionHandler
 {
     private readonly string _projectsListRouteKey;
 
-    public override UserActionType ActionType => UserActionType.Unsubscribe;
+    public override UserActionType ActionType => UserActionType.List;
 
     public ListOfSubsAction(IKSCrawlerUnitOfWork dbConnection, ILogger<ListOfSubsAction> logger,
         RabbitMQPublisher publisher, IOptions<RabbitMQConfiguration> rabbitConfig)
@@ -38,6 +38,13 @@ internal class ListOfSubsAction : BaseUserActionHandler
                     Updates = projectInfos.ToList()
                 };
                 _publisher.PushMessage(_projectsListRouteKey, notification, _rabbitConfig.MessageTTL);
+
+                if (!string.IsNullOrEmpty(info.UserId))
+                {
+                    user.UserId = info.UserId;
+                    _db.Users.Update(user);
+                    await _db.Commit(stoppingToken);
+                }
 
                 return true;
             }

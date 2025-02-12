@@ -16,8 +16,7 @@ public class User
     [Required]
     public long ChatId { get; set; }
 
-    [Required]
-    public string UserId { get; set; }
+    public string? UserId { get; set; }
 
     public ICollection<Project> Projects { get; } = new List<Project>();
 }
