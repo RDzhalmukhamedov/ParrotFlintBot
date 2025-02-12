@@ -1,8 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NLog;
-using NLog.Web;
 using ParrotFlintBot.Backend;
 using ParrotFlintBot.Backend.Abstract;
 using ParrotFlintBot.Backend.Services;
@@ -11,16 +9,13 @@ using ParrotFlintBot.DB;
 using ParrotFlintBot.DB.Abstract;
 using ParrotFlintBot.RabbitMQ;
 using ParrotFlintBot.Shared;
+
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
-IHost host = Host.CreateDefaultBuilder(args)
-    .ConfigureLogging(logging =>
-    {
-        //logging.ClearProviders();
-        logging.SetMinimumLevel(LogLevel.Trace);
-        //LogManager.Setup().LoadConfigurationFromAppSettings();
-    })
-    //.UseNLog()
+var builder = WebApplication.CreateBuilder(args);
+builder.Logging.SetMinimumLevel(LogLevel.Trace);
+
+builder.Host
     .ConfigureServices((context, services) =>
     {
         services.Configure<AppConfig>(context.Configuration.GetSection(AppConfig.Configuration));
@@ -48,7 +43,11 @@ IHost host = Host.CreateDefaultBuilder(args)
         services.AddHostedService<ProjectsToCrawlPublisher>();
 
         services.AddSingleton<RabbitMQPublisher>();
-    })
-    .Build();
 
-await host.RunAsync();
+        services.AddHealthChecks();
+    });
+
+var app = builder.Build();
+
+app.MapHealthChecks("/healthz");
+await app.RunAsync();

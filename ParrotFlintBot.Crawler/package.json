@@ -20,13 +20,15 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@babel/traverse": ">=7.23.2",
     "@golevelup/nestjs-rabbitmq": "^3.6.0",
+    "@nestjs/axios": "^3.0.0",
     "@nestjs/common": "^9.0.0",
     "@nestjs/config": "^2.3.1",
     "@nestjs/core": "^9.0.0",
     "@nestjs/microservices": "^9.4.0",
     "@nestjs/platform-express": "^9.0.0",
-    "@babel/traverse": ">=7.23.2",
+    "@nestjs/terminus": "^9.2.2",
     "amqp-connection-manager": "^4.1.12",
     "amqplib": "^0.10.3",
     "apify-client": "^2.7.1",
