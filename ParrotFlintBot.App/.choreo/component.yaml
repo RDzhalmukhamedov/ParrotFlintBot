@@ -1,10 +1,11 @@
-schemaVersion: 1.0 
+schemaVersion: 1.1
  # Example endpoint configuration
 endpoints:
 - name: parrot-flint-bot-app
+  displayName: Greetings to app
   service:
      basePath: /
-     port: 9090
+     port: 8080
   type: REST
   networkVisibilities:
     - Public

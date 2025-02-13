@@ -43,6 +43,6 @@ builder.Host
 
 var app = builder.Build();
 
-app.MapGet("/", () => "Hello World!");
+app.MapGet("/greeter/greet", () => "Hello World!");
 app.MapHealthChecks("/healthz");
 await app.RunAsync();
