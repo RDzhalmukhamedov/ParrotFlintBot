@@ -3,5 +3,6 @@ schemaVersion: 1.0
 endpoints:
 - name: parrot-flint-bot-app
   service:
+     basePath: /
      port: 9090
   type: REST
