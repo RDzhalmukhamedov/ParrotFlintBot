@@ -5,7 +5,7 @@ endpoints:
   displayName: Greetings to app
   service:
      basePath: /
-     port: 8080
+     port: 5000
   type: REST
   networkVisibilities:
     - Public
