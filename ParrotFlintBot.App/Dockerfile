@@ -21,9 +21,9 @@ WORKDIR /app
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["../ParrotFlintBot.App/ParrotFlintBot.App.csproj", "ParrotFlintBot.App/"]
-COPY ["../ParrotFlintBot.RabbitMQ/ParrotFlintBot.RabbitMQ.csproj", "ParrotFlintBot.RabbitMQ/"]
-COPY ["../ParrotFlintBot.Shared/ParrotFlintBot.Shared.csproj", "ParrotFlintBot.Shared/"]
+COPY ["/ParrotFlintBot.App/ParrotFlintBot.App.csproj", "ParrotFlintBot.App/"]
+COPY ["/ParrotFlintBot.RabbitMQ/ParrotFlintBot.RabbitMQ.csproj", "ParrotFlintBot.RabbitMQ/"]
+COPY ["/ParrotFlintBot.Shared/ParrotFlintBot.Shared.csproj", "ParrotFlintBot.Shared/"]
 RUN dotnet restore "./ParrotFlintBot.App/ParrotFlintBot.App.csproj"
 COPY . .
 WORKDIR "/src/ParrotFlintBot.App"
