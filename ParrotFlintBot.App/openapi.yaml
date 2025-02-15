@@ -1,9 +1,9 @@
 openapi: "3.0.0"
 info:
-  title: Greeting Service
+  title: Bot App Service
   version: 1.0.0
 paths:
-  /greeter/greet:
+  /app/index:
     get:
       summary: Greet a person
       description: Greet a person by name

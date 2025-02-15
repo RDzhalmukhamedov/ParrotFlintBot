@@ -38,11 +38,19 @@ builder.Host
         services.AddHostedService<ProjectsListListener>();
         services.AddSingleton<RabbitMQPublisher>();
 
+        services.AddControllers();
+
+        //services.AddSingleton<CustomServer>();
+
         services.AddHealthChecks();
     });
 
 var app = builder.Build();
 
-app.MapGet("/greeter/greet", () => "Hello World!");
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=App}/{action=Index}/{id?}");
+
+//app.MapGet("/greeter/greet", () => "Hello World!");
 app.MapHealthChecks("/healthz");
 await app.RunAsync();
