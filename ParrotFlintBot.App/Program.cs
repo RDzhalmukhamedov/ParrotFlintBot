@@ -51,6 +51,6 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=App}/{action=Index}/{id?}");
 
-//app.MapGet("/greeter/greet", () => "Hello World!");
+app.MapGet("/greeter/greet", () => "Hello World!");
 app.MapHealthChecks("/healthz");
 await app.RunAsync();

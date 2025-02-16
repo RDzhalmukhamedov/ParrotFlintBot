@@ -43,4 +43,4 @@ COPY --from=publish /app/publish .
 USER 10014
 
 ENTRYPOINT ["dotnet", "ParrotFlintBot.App.dll"]
-EXPOSE 443 5672
+EXPOSE 443 5672 9090
