@@ -20,10 +20,14 @@ builder.Host
 
         services.AddSingleton<RabbitMQPublisher>();
 
+        services.AddControllers();
+
         services.AddHealthChecks();
     });
 
 var app = builder.Build();
 
+app.MapControllerRoute(name: "default", pattern: "{controller=App}/{action=Index}/{id?}");
 app.MapHealthChecks("/healthz");
+
 await app.RunAsync();

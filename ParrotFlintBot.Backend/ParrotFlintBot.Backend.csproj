@@ -15,10 +15,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Include=".choreo\component.yaml" />
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\ParrotFlintBot.DB\ParrotFlintBot.DB.csproj" />
       <ProjectReference Include="..\ParrotFlintBot.RabbitMQ\ParrotFlintBot.RabbitMQ.csproj" />
     </ItemGroup>

@@ -40,17 +40,12 @@ builder.Host
 
         services.AddControllers();
 
-        //services.AddSingleton<CustomServer>();
-
         services.AddHealthChecks();
     });
 
 var app = builder.Build();
 
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=App}/{action=Index}/{id?}");
-
-app.MapGet("/greeter/greet", () => "Hello World!");
+app.MapControllerRoute(name: "default", pattern: "{controller=App}/{action=Index}/{id?}");
 app.MapHealthChecks("/healthz");
+
 await app.RunAsync();

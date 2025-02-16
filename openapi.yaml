@@ -1,29 +1,14 @@
 openapi: "3.0.0"
 info:
-  title: Bot App Service
+  title: Parrot Flint Bot Service
   version: 1.0.0
 paths:
   /app/index:
     get:
-      summary: Greet a person
-      description: Greet a person by name
+      summary: Gets home page
+      description: Gets home page for apps vith version
       tags:
-        - greeting
-      responses:
-        '200':
-          description: Successful response
-          content:
-            text/plain:
-              schema:
-                type: string
-      deprecated: false
-      security: []
-  /greeter/greet:
-    get:
-      summary: Say hello
-      description: Says hello to world
-      tags:
-        - greeting
+        - index
       responses:
         '200':
           description: Successful response

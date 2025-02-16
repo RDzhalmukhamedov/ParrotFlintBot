@@ -7,10 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include=".choreo\component.yaml" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="BetterStack.Logs.NLog" Version="1.0.0" />
     <PackageReference Include="CodeHollow.FeedReader" Version="1.2.6" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.1" />
