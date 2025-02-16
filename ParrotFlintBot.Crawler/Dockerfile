@@ -35,5 +35,5 @@ COPY --chown=node:node --from=build /usr/src/app/dist ./dist
 # Use the above created unprivileged user
 USER 10014
 
-EXPOSE 4321 5671 5672
+EXPOSE 4321 5671 5672 9090
 CMD [ "node", "dist/main.js" ]

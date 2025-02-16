@@ -1,0 +1,20 @@
+openapi: '3.0.0'
+info:
+  title: Parrot Flint Bot Service
+  version: 1.0.0
+paths:
+  /app/index:
+    get:
+      summary: Gets home page
+      description: Gets home page for apps vith version
+      tags:
+        - index
+      responses:
+        '200':
+          description: Successful response
+          content:
+            text/plain:
+              schema:
+                type: string
+      deprecated: false
+      security: []

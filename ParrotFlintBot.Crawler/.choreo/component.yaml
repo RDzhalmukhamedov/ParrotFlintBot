@@ -1,11 +1,12 @@
-schemaVersion: '1.1'
+schemaVersion: 1.1
+
 endpoints:
-  - name: parrot-flint-bot-crawler
-    displayName: parrot-flint-bot-crawler
+  - name: parrot-flint-bot
+    displayName: App Greeter
     service:
       basePath: /
-      port: 9093
+      port: 9090
     type: REST
     networkVisibilities:
       - Public
-    schemaFilePath: .
+    schemaFilePath: openapi.yaml
