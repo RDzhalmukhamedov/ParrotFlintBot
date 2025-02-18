@@ -49,14 +49,21 @@ public class CommunicationService : ICommunicationService
             link = await UnshortenLink(link!, stoppingToken);
             if (link is not null)
             {
-                var successMessage = actionType is UserActionType.Subscribe
-                    ? $"Вы успешно подписались на обновления для {link.GetLeftPart(UriPartial.Path)}"
-                    : $"Вы успешно отписались от получения обновлений для {link.GetLeftPart(UriPartial.Path)}";
-                
-                _publisher.PushMessage(_routeKey, new UserActionInfo {ChatId = chatId, UserId = userId, ProjectLink = link, Type = actionType }, _config.MessageTTL);
-                // TODO Use events instead (later)
-                var ack = _publisher.WaitForAck();
-                message = ack ? successMessage : "Что-то пошло не так, попробуйте позже";
+                if (link.Host.Contains("gamefound"))
+                {
+                    message = "Подписка на обновления для Gamefound временно недоступна";
+                }
+                else
+                {
+                    var successMessage = actionType is UserActionType.Subscribe
+                        ? $"Вы успешно подписались на обновления для {link.GetLeftPart(UriPartial.Path)}"
+                        : $"Вы успешно отписались от получения обновлений для {link.GetLeftPart(UriPartial.Path)}";
+
+                    _publisher.PushMessage(_routeKey, new UserActionInfo { ChatId = chatId, UserId = userId, ProjectLink = link, Type = actionType }, _config.MessageTTL);
+                    // TODO Use events instead (later)
+                    var ack = _publisher.WaitForAck();
+                    message = ack ? successMessage : "Что-то пошло не так, попробуйте позже";
+                }
             }
         }
         else
@@ -111,7 +118,7 @@ public class CommunicationService : ICommunicationService
         }
         else
         {
-            var notifications = info.Updates.Chunk(10)
+            var notifications = info.Updates.Where(p => p.Link.Contains("kickstarter")).Chunk(10)
                 .Select(chunk => SendProjectListMessage(info.ChatId, chunk, stoppingToken));
             await Task.WhenAll(notifications);
         }
