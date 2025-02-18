@@ -55,10 +55,10 @@ public class ProjectsToCrawlListener : RabbitMQListener
                 {
                     update = await CrawlKs(projectInfo, stoppingToken);
                 }
-                else
-                {
-                    update = await CrawlGf(projectInfo, stoppingToken);
-                }
+                //else
+                //{
+                //    update = await CrawlGf(projectInfo, stoppingToken);
+                //}
 
                 if (update is not null) result.Add(update);
             }

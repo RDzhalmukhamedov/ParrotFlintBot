@@ -124,7 +124,7 @@ public class ProjectsToCrawlPublisher : IHostedService, IDisposable
                 var projects = await db.Projects.GetAllProjectsInfoForSimpleCrawl(stoppingToken);
                 if (projects.Any())
                 {
-                    _publisher.PushMessage(_simpleCrawlRouteKey, JsonSerializer.Serialize(projects), _rabbitConfig.MessageTTL);
+                    _publisher.PushMessage(_simpleCrawlRouteKey, projects, _rabbitConfig.MessageTTL);
                 }
             }
         }
@@ -182,7 +182,7 @@ public class ProjectsToCrawlPublisher : IHostedService, IDisposable
                 var projects = await db.Projects.GetAllProjectsInfoForFullCrawl(stoppingToken);
                 if (projects.Any())
                 {
-                    _publisher.PushMessage(_fullCrawlRouteKey, JsonSerializer.Serialize(projects), _rabbitConfig.MessageTTL);
+                    _publisher.PushMessage(_fullCrawlRouteKey, projects, _rabbitConfig.MessageTTL);
                 }
             }
         }

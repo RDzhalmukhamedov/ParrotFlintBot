@@ -58,7 +58,7 @@ public class ProjectRepository : IProjectRepository
             {
                 ProjectId = p.Id,
                 Status = p.Status,
-                Link = p.GetUrlToFullCrawl(),
+                Link = p.GetUrlToSimpleCrawl(),
                 ProjectName = p.Name,
                 PrevStatus = p.Status,
                 UpdatesCount = p.UpdatesCount,
