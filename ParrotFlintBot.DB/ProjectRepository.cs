@@ -45,6 +45,8 @@ public class ProjectRepository : IProjectRepository
                 PrevUpdatesCount = p.PrevUpdatesCount,
                 ProjectIdOnSite = p.ProjectId,
                 NeedFullCrawl = p.NeedFullCrawl,
+                LastUpdateId = p.LastUpdateId,
+                LastUpdateTitle = p.LastUpdateTitle,
             });
         return await result.ToListAsync(stoppingToken);
     }
@@ -65,6 +67,8 @@ public class ProjectRepository : IProjectRepository
                 PrevUpdatesCount = p.PrevUpdatesCount,
                 ProjectIdOnSite = p.ProjectId,
                 NeedFullCrawl = p.NeedFullCrawl,
+                LastUpdateId = p.LastUpdateId,
+                LastUpdateTitle = p.LastUpdateTitle,
             });
         return await result.ToListAsync(stoppingToken);
     }
@@ -85,6 +89,8 @@ public class ProjectRepository : IProjectRepository
                 PrevUpdatesCount = p.PrevUpdatesCount,
                 ProjectIdOnSite = p.ProjectId,
                 NeedFullCrawl = p.NeedFullCrawl,
+                LastUpdateId = p.LastUpdateId,
+                LastUpdateTitle = p.LastUpdateTitle,
             });
         return await result.ToListAsync(stoppingToken);
     }
