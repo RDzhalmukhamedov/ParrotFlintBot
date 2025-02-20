@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ParrotFlintBot.Backend.Abstract;
 using ParrotFlintBot.DB.Abstract;
@@ -17,9 +16,9 @@ internal class SubscribeAction : BaseUserActionHandler
 
     public override UserActionType ActionType => UserActionType.Subscribe;
 
-    public SubscribeAction(IServiceProvider serviceProvider, ILogger<SubscribeAction> logger,
+    public SubscribeAction(IKSCrawlerUnitOfWork dbConnection, ILogger<SubscribeAction> logger,
         RabbitMQPublisher publisher, IOptions<RabbitMQConfiguration> rabbitConfig)
-        : base(serviceProvider, logger, publisher, rabbitConfig)
+        : base(dbConnection, logger, publisher, rabbitConfig)
     {
         _rabbitConfig.PublisherRouteKeys.TryGetValue(RouteKeyNames.ProjectsToFullCrawl, out var fullCrawlRoute);
         _fullCrawlRouteKey = string.IsNullOrWhiteSpace(fullCrawlRoute) ? RouteKeyNames.ProjectsToFullCrawl : fullCrawlRoute;
@@ -64,54 +63,46 @@ internal class SubscribeAction : BaseUserActionHandler
 
     private async Task<User> CheckAndGetUser(UserActionInfo info, CancellationToken stoppingToken)
     {
-        using (var scope = _serviceProvider.CreateScope())
+        User? user = null;
+        if (info.ChatId is null)
         {
-            var db = scope.ServiceProvider.GetRequiredService<IKSCrawlerUnitOfWork>();
-            User? user = null;
-            if (info.ChatId is null)
+            if (info.UserId is not null)
             {
-                if (info.UserId is not null)
-                {
-                    user = await db.Users.GetByUserId(info.UserId, stoppingToken, includeProjects: true);
-                }
-
-                if (user is null) throw new NullReferenceException($"{nameof(info.UserId)} and {nameof(info.ChatId)}");
+                user = await _db.Users.GetByUserId(info.UserId, stoppingToken, includeProjects: true);
             }
 
-            user = user ?? await db.Users.CreateIfNotExist(info.ChatId!.Value, stoppingToken);
-            if (!string.IsNullOrEmpty(info.UserId))
-            {
-                user.UserId = info.UserId;
-                db.Users.Update(user);
-            }
-            await db.Commit(stoppingToken);
-
-            return user;
+            if (user is null) throw new NullReferenceException($"{nameof(info.UserId)} and {nameof(info.ChatId)}");
         }
+
+        user = user ?? await _db.Users.CreateIfNotExist(info.ChatId!.Value, stoppingToken);
+        if (!string.IsNullOrEmpty(info.UserId))
+        {
+            user.UserId = info.UserId;
+            _db.Users.Update(user);
+        }
+        await _db.Commit(stoppingToken);
+
+        return user;
     }
 
     private async Task<Project> CheckAndGetProject(UserActionInfo info, User user, CancellationToken stoppingToken)
     {
         if (info.ProjectLink is null) throw new NullReferenceException(nameof(info.ProjectLink));
 
-        using (var scope = _serviceProvider.CreateScope())
+        Project project;
+        var currentSubscription = user.Projects.ContainsEqualProject(info.ProjectLink);
+        if (currentSubscription is null)
         {
-            var db = scope.ServiceProvider.GetRequiredService<IKSCrawlerUnitOfWork>();
-            Project project;
-            var currentSubscription = user.Projects.ContainsEqualProject(info.ProjectLink);
-            if (currentSubscription is null)
-            {
-                project = await db.Projects.CreateIfNotExist(info.ProjectLink.GetProjectSlug(),
-                    info.ProjectLink.GetCreatorSlug(), info.ProjectLink.GetSiteName(), stoppingToken);
-                user.Projects.Add(project);
-            }
-            else
-            {
-                project = currentSubscription;
-            }
-            await db.Commit(stoppingToken);
-
-            return project;
+            project = await _db.Projects.CreateIfNotExist(info.ProjectLink.GetProjectSlug(),
+                info.ProjectLink.GetCreatorSlug(), info.ProjectLink.GetSiteName(), stoppingToken);
+            user.Projects.Add(project);
         }
+        else
+        {
+            project = currentSubscription;
+        }
+        await _db.Commit(stoppingToken);
+
+        return project;
     }
 }

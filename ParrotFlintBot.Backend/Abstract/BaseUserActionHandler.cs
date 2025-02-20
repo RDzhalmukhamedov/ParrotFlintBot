@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using ParrotFlintBot.DB.Abstract;
 using ParrotFlintBot.Domain;
 using ParrotFlintBot.RabbitMQ;
 using ParrotFlintBot.Shared;
@@ -8,17 +9,17 @@ namespace ParrotFlintBot.Backend.Abstract;
 
 internal abstract class BaseUserActionHandler : IUserActionHandler
 {
-    protected readonly IServiceProvider _serviceProvider;
+    protected readonly IKSCrawlerUnitOfWork _db;
     protected readonly ILogger<IUserActionHandler> _logger;
     protected readonly RabbitMQPublisher _publisher;
     protected readonly RabbitMQConfiguration _rabbitConfig;
 
     public abstract UserActionType ActionType { get; }
 
-    protected BaseUserActionHandler(IServiceProvider serviceProvider, ILogger<IUserActionHandler> logger,
+    protected BaseUserActionHandler(IKSCrawlerUnitOfWork dbConnection, ILogger<IUserActionHandler> logger,
                                     RabbitMQPublisher publisher, IOptions<RabbitMQConfiguration> rabbitConfig)
     {
-        _serviceProvider = serviceProvider;
+        _db = dbConnection;
         _logger = logger;
         _publisher = publisher;
         _rabbitConfig = rabbitConfig.Value;
