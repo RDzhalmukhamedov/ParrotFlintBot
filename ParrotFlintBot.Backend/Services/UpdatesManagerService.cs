@@ -7,14 +7,13 @@ using ParrotFlintBot.Shared;
 
 namespace ParrotFlintBot.Backend.Services;
 
-public class UpdatesManagerService : IUpdatesManagerService, IDisposable
+public class UpdatesManagerService : IUpdatesManagerService
 {
     private readonly ILogger<UpdatesManagerService> _logger;
     private readonly IKSCrawlerUnitOfWork _db;
     private readonly RabbitMQPublisher _publisher;
     private readonly RabbitMQConfiguration _rabbitConfig;
     private readonly string _updatesRouteKey;
-    private bool disposedValue;
 
     public UpdatesManagerService(
         IKSCrawlerUnitOfWork dbConnection,
@@ -61,24 +60,5 @@ public class UpdatesManagerService : IUpdatesManagerService, IDisposable
             _logger.LogError("Updating information about projects failed with exception {Exception}", ex);
             return false;
         }
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (!disposedValue)
-        {
-            if (disposing)
-            {
-                _db.Dispose();
-            }
-
-            disposedValue = true;
-        }
-    }
-
-    public void Dispose()
-    {
-        Dispose(disposing: true);
-        GC.SuppressFinalize(this);
     }
 }

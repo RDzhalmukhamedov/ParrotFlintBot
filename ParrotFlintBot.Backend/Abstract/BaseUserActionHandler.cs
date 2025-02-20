@@ -7,13 +7,12 @@ using ParrotFlintBot.Shared;
 
 namespace ParrotFlintBot.Backend.Abstract;
 
-internal abstract class BaseUserActionHandler : IUserActionHandler, IDisposable
+internal abstract class BaseUserActionHandler : IUserActionHandler
 {
     protected readonly IKSCrawlerUnitOfWork _db;
     protected readonly ILogger<IUserActionHandler> _logger;
     protected readonly RabbitMQPublisher _publisher;
     protected readonly RabbitMQConfiguration _rabbitConfig;
-    private bool disposedValue;
 
     public abstract UserActionType ActionType { get; }
 
@@ -44,24 +43,5 @@ internal abstract class BaseUserActionHandler : IUserActionHandler, IDisposable
             NeedFullCrawl = project.NeedFullCrawl,
             ProjectIdOnSite = project.ProjectId,
         };
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (!disposedValue)
-        {
-            if (disposing)
-            {
-                _db.Dispose();
-            }
-
-            disposedValue = true;
-        }
-    }
-
-    public void Dispose()
-    {
-        Dispose(disposing: true);
-        GC.SuppressFinalize(this);
     }
 }
