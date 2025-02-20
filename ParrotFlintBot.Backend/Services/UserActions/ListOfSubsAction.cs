@@ -1,8 +1,8 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ParrotFlintBot.Backend.Abstract;
 using ParrotFlintBot.DB.Abstract;
-using ParrotFlintBot.Domain;
 using ParrotFlintBot.RabbitMQ;
 using ParrotFlintBot.Shared;
 
@@ -14,9 +14,9 @@ internal class ListOfSubsAction : BaseUserActionHandler
 
     public override UserActionType ActionType => UserActionType.List;
 
-    public ListOfSubsAction(IKSCrawlerUnitOfWork dbConnection, ILogger<ListOfSubsAction> logger,
+    public ListOfSubsAction(IServiceProvider serviceProvider, ILogger<ListOfSubsAction> logger,
         RabbitMQPublisher publisher, IOptions<RabbitMQConfiguration> rabbitConfig)
-        : base(dbConnection, logger, publisher, rabbitConfig)
+        : base(serviceProvider, logger, publisher, rabbitConfig)
     {
         rabbitConfig.Value.PublisherRouteKeys.TryGetValue(RouteKeyNames.ProjectsList, out var route);
         _projectsListRouteKey = string.IsNullOrWhiteSpace(route) ? RouteKeyNames.ProjectsList : route;
@@ -27,40 +27,50 @@ internal class ListOfSubsAction : BaseUserActionHandler
         _logger.LogInformation("Started getting list of projects for user {UserId}({ChatId}).", info.UserId, info.ChatId);
         try
         {
-            var user = await GetUser(info, stoppingToken);
-            if (user is not null)
+            using (var scope = _serviceProvider.CreateScope())
             {
-                var projectInfos = user.Projects.Select(ToProjectInfo);
-                var notification = new UpdatesNotification()
-                {
-                    ChatId = user.ChatId,
-                    UserId = info.UserId,
-                    Updates = projectInfos.ToList()
-                };
-                _publisher.PushMessage(_projectsListRouteKey, notification, _rabbitConfig.MessageTTL);
+                var db = scope.ServiceProvider.GetRequiredService<IKSCrawlerUnitOfWork>();
 
-                if (!string.IsNullOrEmpty(info.UserId))
+                var user = info.ChatId is not null
+                    ? await db.Users.GetByChatId(info.ChatId.Value, stoppingToken, includeProjects: true)
+                    : info.UserId is not null
+                        ? await db.Users.GetByUserId(info.UserId, stoppingToken, includeProjects: true)
+                        : null;
+
+                if (user is not null)
                 {
-                    user.UserId = info.UserId;
-                    _db.Users.Update(user);
-                    await _db.Commit(stoppingToken);
+                    var projectInfos = user.Projects.Select(ToProjectInfo);
+                    var notification = new UpdatesNotification()
+                    {
+                        ChatId = user.ChatId,
+                        UserId = info.UserId,
+                        Updates = projectInfos.ToList()
+                    };
+                    _publisher.PushMessage(_projectsListRouteKey, notification, _rabbitConfig.MessageTTL);
+
+                    if (!string.IsNullOrEmpty(info.UserId))
+                    {
+                        user.UserId = info.UserId;
+                        db.Users.Update(user);
+                        await db.Commit(stoppingToken);
+                    }
+
+                    return true;
                 }
-
-                return true;
-            }
-            else
-            {
-                if (info.ChatId is null) return false;
-
-                var notification = new UpdatesNotification()
+                else
                 {
-                    ChatId = info.ChatId.Value,
-                    UserId = info.UserId,
-                    Updates = new List<ProjectInfo>()
-                };
-                _publisher.PushMessage(_projectsListRouteKey, notification, _rabbitConfig.MessageTTL);
+                    if (info.ChatId is null) return false;
 
-                return true;
+                    var notification = new UpdatesNotification()
+                    {
+                        ChatId = info.ChatId.Value,
+                        UserId = info.UserId,
+                        Updates = new List<ProjectInfo>()
+                    };
+                    _publisher.PushMessage(_projectsListRouteKey, notification, _rabbitConfig.MessageTTL);
+
+                    return true;
+                }
             }
         }
         catch (Exception ex)
@@ -71,14 +81,14 @@ internal class ListOfSubsAction : BaseUserActionHandler
         return false;
     }
 
-    private async Task<User?> GetUser(UserActionInfo info, CancellationToken stoppingToken)
-    {
-        var user = info.ChatId is not null
-            ? await _db.Users.GetByChatId(info.ChatId.Value, stoppingToken, includeProjects: true)
-            : info.UserId is not null
-                ? await _db.Users.GetByUserId(info.UserId, stoppingToken, includeProjects: true)
-                : null;
+    //private async Task<User?> GetUser(UserActionInfo info, CancellationToken stoppingToken)
+    //{
+    //    var user = info.ChatId is not null
+    //        ? await _db.Users.GetByChatId(info.ChatId.Value, stoppingToken, includeProjects: true)
+    //        : info.UserId is not null
+    //            ? await _db.Users.GetByUserId(info.UserId, stoppingToken, includeProjects: true)
+    //            : null;
 
-        return user;
-    }
+    //    return user;
+    //}
 }

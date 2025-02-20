@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ParrotFlintBot.Backend.Abstract;
 using ParrotFlintBot.DB.Abstract;
@@ -10,18 +11,18 @@ namespace ParrotFlintBot.Backend.Services;
 public class UpdatesManagerService : IUpdatesManagerService
 {
     private readonly ILogger<UpdatesManagerService> _logger;
-    private readonly IKSCrawlerUnitOfWork _db;
+    private readonly IServiceProvider _serviceProvider;
     private readonly RabbitMQPublisher _publisher;
     private readonly RabbitMQConfiguration _rabbitConfig;
     private readonly string _updatesRouteKey;
 
     public UpdatesManagerService(
-        IKSCrawlerUnitOfWork dbConnection,
+        IServiceProvider serviceProvider,
         RabbitMQPublisher publisher,
         ILogger<UpdatesManagerService> logger,
         IOptions<RabbitMQConfiguration> rabbitConfig)
     {
-        _db = dbConnection;
+        _serviceProvider = serviceProvider;
         _publisher = publisher;
         _logger = logger;
         _rabbitConfig = rabbitConfig.Value;
@@ -35,24 +36,28 @@ public class UpdatesManagerService : IUpdatesManagerService
         _logger.LogInformation("Started updating information about {Count} projects.", updatesInfo.Count);
         try
         {
-            await _db.Projects.BulkUpdate(updatesInfo, stoppingToken);
-            await _db.Commit(stoppingToken);
-            var users = await _db.Users.GetUsersWithSubscriptions(stoppingToken);
-            var updateNotifications = users.Select((user) =>
+            using (var scope = _serviceProvider.CreateScope())
             {
-                var updates = updatesInfo.Join(
-                    user.Projects,
-                    update => update.ProjectId,
-                    project => project.Id,
-                    (update, _) => update);
-                return new UpdatesNotification()
+                var db = scope.ServiceProvider.GetRequiredService<IKSCrawlerUnitOfWork>();
+                await db.Projects.BulkUpdate(updatesInfo, stoppingToken);
+                await db.Commit(stoppingToken);
+                var users = await db.Users.GetUsersWithSubscriptions(stoppingToken);
+                var updateNotifications = users.Select((user) =>
                 {
-                    ChatId = user.ChatId,
-                    Updates = updates.Where(u => !u.NeedFullCrawl).ToList()
-                };
-            }).Where(n => !n.Updates.IsNullOrEmpty());
+                    var updates = updatesInfo.Join(
+                        user.Projects,
+                        update => update.ProjectId,
+                        project => project.Id,
+                        (update, _) => update);
+                    return new UpdatesNotification()
+                    {
+                        ChatId = user.ChatId,
+                        Updates = updates.Where(u => !u.NeedFullCrawl).ToList()
+                    };
+                }).Where(n => !n.Updates.IsNullOrEmpty());
 
-            _publisher.PushMessage(_updatesRouteKey, updateNotifications, _rabbitConfig.MessageTTL);
+                _publisher.PushMessage(_updatesRouteKey, updateNotifications, _rabbitConfig.MessageTTL);
+            }
             return true;
         }
         catch (Exception ex)

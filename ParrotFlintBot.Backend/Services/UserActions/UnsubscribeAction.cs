@@ -1,8 +1,8 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ParrotFlintBot.Backend.Abstract;
 using ParrotFlintBot.DB.Abstract;
-using ParrotFlintBot.Domain;
 using ParrotFlintBot.RabbitMQ;
 using ParrotFlintBot.Shared;
 
@@ -12,9 +12,9 @@ internal class UnsubscribeAction : BaseUserActionHandler
 {
     public override UserActionType ActionType => UserActionType.Unsubscribe;
 
-    public UnsubscribeAction(IKSCrawlerUnitOfWork dbConnection, ILogger<UnsubscribeAction> logger,
+    public UnsubscribeAction(IServiceProvider serviceProvider, ILogger<UnsubscribeAction> logger,
         RabbitMQPublisher publisher, IOptions<RabbitMQConfiguration> rabbitConfig)
-        : base(dbConnection, logger, publisher, rabbitConfig)
+        : base(serviceProvider, logger, publisher, rabbitConfig)
     {
     }
 
@@ -24,22 +24,33 @@ internal class UnsubscribeAction : BaseUserActionHandler
         var result = false;
         try
         {
-            var user = await GetUser(info, stoppingToken);
-
-            if (info.ProjectLink is null) throw new NullReferenceException(nameof(info.ProjectLink));
-
-            var project = await _db.Projects.GetByProjectSlug(info.ProjectLink.GetProjectSlug(), stoppingToken);
-            if (project is not null)
+            using (var scope = _serviceProvider.CreateScope())
             {
-                user.Projects.Remove(project);
-            }
-            else
-            {
-                return result;
-            }
+                var db = scope.ServiceProvider.GetRequiredService<IKSCrawlerUnitOfWork>();
 
-            await _db.Commit(stoppingToken);
-            result = true;
+                var user = info.ChatId is not null
+                    ? await db.Users.GetByChatId(info.ChatId.Value, stoppingToken, includeProjects: true)
+                    : info.UserId is not null
+                        ? await db.Users.GetByUserId(info.UserId, stoppingToken, includeProjects: true)
+                        : null;
+
+                if (user is null) throw new NullReferenceException(nameof(user));
+
+                if (info.ProjectLink is null) throw new NullReferenceException(nameof(info.ProjectLink));
+
+                var project = await db.Projects.GetByProjectSlug(info.ProjectLink.GetProjectSlug(), stoppingToken);
+                if (project is not null)
+                {
+                    user.Projects.Remove(project);
+                }
+                else
+                {
+                    return result;
+                }
+
+                await db.Commit(stoppingToken);
+                result = true;
+            }
         }
         catch (Exception ex)
         {
@@ -49,16 +60,16 @@ internal class UnsubscribeAction : BaseUserActionHandler
         return result;
     }
 
-    private async Task<User> GetUser(UserActionInfo info, CancellationToken stoppingToken)
-    {
-        var user = info.ChatId is not null
-            ? await _db.Users.GetByChatId(info.ChatId.Value, stoppingToken, includeProjects: true)
-            : info.UserId is not null
-                ? await _db.Users.GetByUserId(info.UserId, stoppingToken, includeProjects: true)
-                : null;
+    //private async Task<User> GetUser(UserActionInfo info, CancellationToken stoppingToken)
+    //{
+    //    var user = info.ChatId is not null
+    //        ? await _db.Users.GetByChatId(info.ChatId.Value, stoppingToken, includeProjects: true)
+    //        : info.UserId is not null
+    //            ? await _db.Users.GetByUserId(info.UserId, stoppingToken, includeProjects: true)
+    //            : null;
 
-        if (user is null) throw new NullReferenceException(nameof(user));
+    //    if (user is null) throw new NullReferenceException(nameof(user));
 
-        return user;
-    }
+    //    return user;
+    //}
 }
