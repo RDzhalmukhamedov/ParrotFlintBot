@@ -96,10 +96,10 @@ public class ProjectsToCrawlListener : RabbitMQListener
                         return null;
                     }
                     projectInfo.NeedFullCrawl = false;
-                    projectInfo.LastUpdateTitle = lastCrawledUpdate.Title;
+                    projectInfo.LastUpdateTitle = feed.Items.First().Title;
                     projectInfo.PrevUpdatesCount = projectInfo.UpdatesCount;
                     projectInfo.UpdatesCount = (short)(projectInfo.UpdatesCount + countChange);
-                    projectInfo.Link = lastCrawledUpdate.Link;
+                    projectInfo.Link = feed.Items.First().Link;
                     projectInfo.LastUpdateId = long.Parse(projectInfo.Link.Split('/').Last());
                 }
             }
